@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import PracticeLog from './components/PracticeLog';
+import AddSessionForm from './components/AddSessionForm';
 
 function App() {
+  const [sessions, setSessions] = useState([]);
+
+  const fetchSessions = async () => {
+    const res = await fetch('http://localhost:5050/api/sessions');
+    const data = await res.json();
+    setSessions(data);
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const handleSessionAdded = (newSession) => {
+    fetchSessions();
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>DrumTrek</h1>
+      <AddSessionForm onSessionAdded={handleSessionAdded} />
+      <PracticeLog sessions={sessions} />
     </div>
   );
 }
