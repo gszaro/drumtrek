@@ -128,6 +128,16 @@ app.post("/api/session_exercises", async (req, res) => {
   }
 });
 
+app.get("/api/users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM users ORDER BY username");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Failed to fetch users:", err);
+    res.status(500).json({ error: "Failed to load users" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
