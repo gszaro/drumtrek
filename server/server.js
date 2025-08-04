@@ -50,15 +50,44 @@ app.post("/api/sessions", async (req, res) => {
   }
 });
 
-app.get("/api/users", async (req, res) => {
+app.get("/api/sessions", async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT id, username FROM users ORDER BY username"
-    );
-    res.json(result.rows);
+    // Fetch all sessions
+    const sessionResult = await pool.query(`
+      SELECT ps.*, u.username
+      FROM practice_sessions ps
+      JOIN users u ON ps.user_id = u.id
+      ORDER BY ps.date DESC
+    `);
+
+    const sessions = sessionResult.rows;
+
+    // Get all session_exercises and join with exercises
+    const exerciseResult = await pool.query(`
+      SELECT se.*, e.name AS exercise_name
+      FROM session_exercises se
+      LEFT JOIN exercises e ON se.exercise_id = e.id
+    `);
+
+    const allExercises = exerciseResult.rows;
+
+    // Map exercises to their parent sessions
+    const sessionsWithExercises = sessions.map((session) => {
+      const exercises = allExercises
+        .filter((ex) => ex.session_id === session.id)
+        .map((ex) => ({
+          name: ex.exercise_name || ex.name, // DB name or custom name
+          reps: ex.reps,
+          tempo: ex.tempo,
+        }));
+
+      return { ...session, exercises };
+    });
+
+    res.json(sessionsWithExercises);
   } catch (err) {
-    console.error("❌ Failed to fetch users:", err);
-    res.status(500).json({ error: "Failed to load users" });
+    console.error("❌ Failed to fetch sessions with exercises:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
