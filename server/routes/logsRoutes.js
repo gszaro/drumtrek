@@ -92,7 +92,10 @@ router.post("/", async (req, res) => {
 
 // GET a single log by id with its details
 router.get("/:id", async (req, res) => {
-  const logId = req.params.id;
+  const logId = parseInt(req.params.id, 10);
+  if (isNaN(logId)) {
+    return res.status(400).json({ error: "Invalid log id" });
+  }
 
   try {
     const logResult = await pool.query(
@@ -134,9 +137,12 @@ router.get("/:id", async (req, res) => {
 
 // PUT update a log and replace its details
 router.put("/:id", async (req, res) => {
-  const logId = req.params.id;
+  const logId = parseInt(req.params.id, 10);
   const { user_id, date, duration, description, details } = req.body;
 
+  if (isNaN(logId)) {
+    return res.status(400).json({ error: "Invalid log id" });
+  }
   if (!user_id || !duration) {
     return res
       .status(400)
@@ -188,7 +194,10 @@ router.put("/:id", async (req, res) => {
 
 // DELETE a whole log and its details
 router.delete("/:id", async (req, res) => {
-  const logId = req.params.id;
+  const logId = parseInt(req.params.id, 10);
+  if (isNaN(logId)) {
+    return res.status(400).json({ error: "Invalid log id" });
+  }
   const client = await pool.connect();
 
   try {
@@ -210,7 +219,6 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ error: "Log not found" });
     }
 
-    // Always respond with JSON message
     res.status(200).json({ message: "Log deleted" });
   } catch (err) {
     await client.query("ROLLBACK");
@@ -222,22 +230,40 @@ router.delete("/:id", async (req, res) => {
 });
 
 // DELETE a single log detail (exercise) by its id
-router.delete("/detail/:id", async (req, res) => {
-  const detailId = req.params.id;
+router.delete("/:id", async (req, res) => {
+  const logId = parseInt(req.params.id, 10);
+  console.log("Received delete request for log id:", logId); // Debug log
+
+  if (isNaN(logId)) {
+    return res.status(400).json({ error: "Invalid log id" });
+  }
+
+  const client = await pool.connect();
 
   try {
-    const result = await pool.query("DELETE FROM log_details WHERE id = $1", [
-      detailId,
+    await client.query("BEGIN");
+
+    await client.query("DELETE FROM log_details WHERE session_id = $1", [
+      logId,
     ]);
+    const result = await client.query(
+      "DELETE FROM activity_logs WHERE id = $1",
+      [logId]
+    );
+
+    await client.query("COMMIT");
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Log detail not found" });
+      return res.status(404).json({ error: "Log not found" });
     }
 
-    res.json({ message: "Log detail deleted" });
+    res.status(200).json({ message: "Log deleted" });
   } catch (err) {
-    console.error("❌ Failed to delete log detail:", err);
-    res.status(500).json({ error: "Failed to delete log detail" });
+    await client.query("ROLLBACK");
+    console.error("❌ Failed to delete log:", err);
+    res.status(500).json({ error: "Failed to delete log" });
+  } finally {
+    client.release();
   }
 });
 

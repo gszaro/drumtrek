@@ -54,9 +54,7 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
                         } catch {}
                         throw new Error(errorMessage);
                       }
-                      try {
-                        await res.json();
-                      } catch {}
+                      // No alert on success, just update UI
                       onDeleteLog(log.id);
                     })
                     .catch((err) =>

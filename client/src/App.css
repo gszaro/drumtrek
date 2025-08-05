@@ -55,8 +55,3 @@ button:hover {
   background-color: #444c5a;
 }
 
-input, select, textarea, button {
-  max-width: 100%;
-  box-sizing: border-box;
-  word-wrap: break-word;
-}

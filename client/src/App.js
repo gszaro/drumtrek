@@ -36,6 +36,11 @@ function App() {
     setEditLogId(null);
   };
 
+  // This will remove the deleted log immediately from the UI
+  const handleDeleteLog = (deletedLogId) => {
+    setLogs((prevLogs) => prevLogs.filter((log) => log.id !== deletedLogId));
+  };
+
   if (loading) return <p>Loading activity logs...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
@@ -60,7 +65,11 @@ function App() {
           textAlign: "center",
         }}
       >
-        <ActivityLog logs={logs} onEdit={setEditLogId} />
+        <ActivityLog
+          logs={logs}
+          onEdit={setEditLogId}
+          onDeleteLog={handleDeleteLog} // Pass delete handler here
+        />
       </div>
 
       {/* Conditionally show Add or Edit form */}
