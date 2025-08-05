@@ -36,9 +36,35 @@ function App() {
     setEditLogId(null);
   };
 
-  // This will remove the deleted log immediately from the UI
-  const handleDeleteLog = (deletedLogId) => {
-    setLogs((prevLogs) => prevLogs.filter((log) => log.id !== deletedLogId));
+  // Optimistic delete
+  const handleDeleteLog = async (logId) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this log and all its exercises?"
+      )
+    )
+      return;
+
+    // Save current state for rollback in case of failure
+    const previousLogs = [...logs];
+
+    // Remove from UI immediately
+    setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId));
+
+    try {
+      const res = await fetch(`http://localhost:5050/api/logs/${logId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Delete failed");
+      }
+    } catch (err) {
+      // Restore previous state if delete failed
+      setLogs(previousLogs);
+      alert(`Error deleting log: ${err.message}`);
+    }
   };
 
   if (loading) return <p>Loading activity logs...</p>;
@@ -68,7 +94,7 @@ function App() {
         <ActivityLog
           logs={logs}
           onEdit={setEditLogId}
-          onDeleteLog={handleDeleteLog} // Pass delete handler here
+          onDeleteLog={handleDeleteLog}
         />
       </div>
 
