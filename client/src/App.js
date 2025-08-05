@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from "react";
-import PracticeLog from "./components/PracticeLog";
-import AddSessionForm from "./components/AddSessionForm";
+import ActivityLog from "./components/ActivityLog";
+import AddLogForm from "./components/AddLogForm";
 import "./App.css";
 
 function App() {
-  const [sessions, setSessions] = useState([]);
+  const [logs, setLogs] = useState([]);
 
-  const fetchSessions = async () => {
-    const res = await fetch("http://localhost:5050/api/sessions");
-    const data = await res.json();
-    setSessions(data);
+  const fetchLogs = async () => {
+    try {
+      const res = await fetch("http://localhost:5050/api/logs");
+      if (!res.ok) {
+        throw new Error(`Error fetching logs: ${res.status}`);
+      }
+      const data = await res.json();
+      setLogs(data);
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+    }
   };
 
   useEffect(() => {
-    fetchSessions();
+    fetchLogs();
   }, []);
 
-  const handleSessionAdded = (newSession) => {
-    fetchSessions();
+  const handleLogAdded = () => {
+    fetchLogs();
   };
 
   return (
     <div className="App">
-      <h1>DrumTrek</h1>
-      <AddSessionForm onSessionAdded={handleSessionAdded} />
-      <PracticeLog sessions={sessions} />
+      <h1>Activity Tracker</h1>
+      <AddLogForm onLogAdded={handleLogAdded} />
+      <ActivityLog logs={logs} />
     </div>
   );
 }

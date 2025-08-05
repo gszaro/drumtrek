@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function PracticeLog({ sessions }) {
+function ActivityLog({ logs }) {
   const [expandedId, setExpandedId] = useState(null);
 
   const toggleExpand = (id) => {
@@ -9,12 +9,12 @@ function PracticeLog({ sessions }) {
 
   return (
     <div>
-      <h2>Practice Sessions</h2>
+      <h2>Activity Logs</h2>
       <ul>
-        {sessions.map((session) => (
+        {logs.map((log) => (
           <li
-            key={session.id}
-            onClick={() => toggleExpand(session.id)}
+            key={log.id}
+            onClick={() => toggleExpand(log.id)}
             style={{
               background: "white",
               marginBottom: "1rem",
@@ -25,22 +25,20 @@ function PracticeLog({ sessions }) {
               transition: "all 0.3s ease",
             }}
           >
-            <strong>{session.username}</strong> – {session.duration_minutes} min
-            on {new Date(session.date).toDateString()}
-            {expandedId === session.id && (
+            <strong>{log.username}</strong> – {log.duration} min on{" "}
+            {new Date(log.date).toDateString()}
+            {expandedId === log.id && (
               <div style={{ marginTop: "1rem", textAlign: "left" }}>
                 <p>
-                  <strong>Notes:</strong> {session.notes}
+                  <strong>Description:</strong> {log.description}
                 </p>
-
-                {session.exercises && session.exercises.length > 0 && (
+                {log.details && log.details.length > 0 && (
                   <div>
-                    <strong>Exercises:</strong>
+                    <strong>Details:</strong>
                     <ul>
-                      {session.exercises.map((ex, i) => (
+                      {log.details.map((d, i) => (
                         <li key={i}>
-                          {ex.name} – {ex.reps || "-"} reps @ {ex.tempo || "-"}{" "}
-                          BPM
+                          {d.name} – {d.reps || "-"} reps @ {d.tempo || "-"} BPM
                         </li>
                       ))}
                     </ul>
@@ -55,4 +53,4 @@ function PracticeLog({ sessions }) {
   );
 }
 
-export default PracticeLog;
+export default ActivityLog;
