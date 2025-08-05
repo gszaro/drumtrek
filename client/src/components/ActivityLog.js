@@ -1,51 +1,81 @@
-import React, { useState } from "react";
+import React from "react";
 
-function ActivityLog({ logs }) {
-  const [expandedId, setExpandedId] = useState(null);
-
-  const toggleExpand = (id) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  };
+function ActivityLog({ logs, onEdit, onDeleteLog }) {
+  if (!logs.length) return <p>No activity logs found.</p>;
 
   return (
     <div>
-      <h2>Activity Logs</h2>
-      <ul>
+      <h2 style={{ textAlign: "center" }}>Activity Logs</h2>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {logs.map((log) => (
           <li
             key={log.id}
-            onClick={() => toggleExpand(log.id)}
             style={{
-              background: "white",
               marginBottom: "1rem",
-              padding: "1rem",
-              borderRadius: "8px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
+              paddingBottom: "1rem",
+              borderBottom: "1px solid #ccc",
             }}
           >
-            <strong>{log.username}</strong> – {log.duration} min on{" "}
-            {new Date(log.date).toDateString()}
-            {expandedId === log.id && (
-              <div style={{ marginTop: "1rem", textAlign: "left" }}>
-                <p>
-                  <strong>Description:</strong> {log.description}
-                </p>
-                {log.details && log.details.length > 0 && (
-                  <div>
-                    <strong>Details:</strong>
-                    <ul>
-                      {log.details.map((d, i) => (
-                        <li key={i}>
-                          {d.name} – {d.reps || "-"} reps @ {d.tempo || "-"} BPM
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+            <strong>{log.username}</strong> —{" "}
+            {new Date(log.date).toLocaleDateString()} — {log.duration} minutes
+            <br />
+            <em>{log.description}</em>
+            {log.details && log.details.length > 0 && (
+              <ul>
+                {log.details.map((detail, index) => (
+                  <li key={index}>
+                    {detail.name} — {detail.reps} reps @ {detail.tempo} bpm
+                  </li>
+                ))}
+              </ul>
             )}
+            <button
+              onClick={() => onEdit(log.id)}
+              style={{ marginTop: "8px", marginRight: "10px" }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Are you sure you want to delete this log and all its exercises?"
+                  )
+                ) {
+                  fetch(`http://localhost:5050/api/logs/${log.id}`, {
+                    method: "DELETE",
+                  })
+                    .then(async (res) => {
+                      if (!res.ok) {
+                        let errorMessage = "Delete failed";
+                        try {
+                          const errorData = await res.json();
+                          errorMessage = errorData.error || errorMessage;
+                        } catch {}
+                        throw new Error(errorMessage);
+                      }
+                      try {
+                        await res.json();
+                      } catch {}
+                      onDeleteLog(log.id);
+                    })
+                    .catch((err) =>
+                      alert(`Error deleting log: ${err.message}`)
+                    );
+                }
+              }}
+              style={{
+                marginTop: "8px",
+                backgroundColor: "#a00",
+                color: "#fff",
+                border: "none",
+                padding: "6px 10px",
+                cursor: "pointer",
+                borderRadius: "4px",
+              }}
+            >
+              Delete Log
+            </button>
           </li>
         ))}
       </ul>

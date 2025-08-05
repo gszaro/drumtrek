@@ -5,205 +5,257 @@ function AddLogForm({ onLogAdded }) {
   const [date, setDate] = useState("");
   const [duration, setDuration] = useState("");
   const [description, setDescription] = useState("");
+  const [details, setDetails] = useState([
+    { exercise_id: "", reps: "", tempo: "" },
+  ]);
   const [users, setUsers] = useState([]);
-  const [details, setDetails] = useState([]);
-  const [selectedDetails, setSelectedDetails] = useState([]);
-  const [detailId, setDetailId] = useState("");
-  const [reps, setReps] = useState("");
-  const [tempo, setTempo] = useState("");
-  const [customDetailName, setCustomDetailName] = useState("");
+  const [activities, setActivities] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchUsersAndDetails() {
-      const [usersRes, detailsRes] = await Promise.all([
-        fetch("http://localhost:5050/api/users"),
-        fetch("http://localhost:5050/api/details"),
-      ]);
-      const usersData = await usersRes.json();
-      const detailsData = await detailsRes.json();
-      setUsers(usersData);
-      setDetails(detailsData);
-    }
-    fetchUsersAndDetails();
+    fetch("http://localhost:5050/api/users")
+      .then((res) => res.json())
+      .then(setUsers)
+      .catch(() => setError("Failed to load users"));
+
+    fetch("http://localhost:5050/api/details")
+      .then((res) => res.json())
+      .then(setActivities)
+      .catch(() => setError("Failed to load activities"));
   }, []);
 
-  const handleAddDetail = () => {
-    if (!detailId && !customDetailName.trim()) {
-      alert("Select a detail or enter a custom detail name");
+  const handleDetailChange = (index, field, value) => {
+    const newDetails = [...details];
+    newDetails[index][field] = value;
+    setDetails(newDetails);
+  };
+
+  const addDetail = () => {
+    setDetails([...details, { exercise_id: "", reps: "", tempo: "" }]);
+  };
+
+  const removeDetail = (index) => {
+    setDetails(details.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!userId || !duration) {
+      setError("User and duration are required");
       return;
     }
 
-    let name = "";
-    let activity_detail_id = null;
+    const filteredDetails = details
+      .filter((d) => d.exercise_id && d.reps)
+      .map((d) => ({
+        exercise_id: parseInt(d.exercise_id),
+        reps: parseInt(d.reps),
+        tempo: d.tempo ? parseInt(d.tempo) : null,
+      }));
 
-    if (detailId === "custom") {
-      name = customDetailName.trim();
-    } else {
-      const selected = details.find((d) => d.id === Number(detailId));
-      if (selected) {
-        name = selected.detail_name;
-        activity_detail_id = selected.id;
-      }
-    }
-
-    setSelectedDetails([
-      ...selectedDetails,
-      { activity_detail_id, name, reps: Number(reps), tempo: Number(tempo) },
-    ]);
-
-    setDetailId("");
-    setReps("");
-    setTempo("");
-    setCustomDetailName("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const log = {
-      user_id: Number(userId),
-      date,
-      duration: Number(duration),
+    const payload = {
+      user_id: parseInt(userId),
+      date: date || new Date().toISOString().split("T")[0],
+      duration: parseInt(duration),
       description,
+      details: filteredDetails,
     };
 
-    const res = await fetch("http://localhost:5050/api/logs", {
+    fetch("http://localhost:5050/api/logs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(log),
-    });
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to add log");
+        return res.json();
+      })
+      .then(() => {
+        setError(null);
+        setUserId("");
+        setDate("");
+        setDuration("");
+        setDescription("");
+        setDetails([{ exercise_id: "", reps: "", tempo: "" }]);
+        if (onLogAdded) onLogAdded();
+      })
+      .catch(() => setError("Error submitting form"));
+  };
 
-    if (res.ok) {
-      const newLog = await res.json();
+  // Shared style for inputs/selects/textareas/buttons to prevent overflow
+  const inputStyle = {
+    maxWidth: "100%",
+    boxSizing: "border-box",
+    marginTop: "5px",
+    padding: "6px",
+    fontSize: "1rem",
+    backgroundColor: "#222",
+    color: "#eee",
+    border: "1px solid #444",
+    borderRadius: "4px",
+  };
 
-      // Save each detail for this log
-      for (let d of selectedDetails) {
-        await fetch("http://localhost:5050/api/log-details", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            log_id: newLog.id,
-            activity_detail_id: d.activity_detail_id,
-            reps: d.reps,
-            tempo: d.tempo,
-            name: d.name,
-          }),
-        });
-      }
-
-      onLogAdded(newLog);
-      setUserId("");
-      setDate("");
-      setDuration("");
-      setDescription("");
-      setSelectedDetails([]);
-    } else {
-      alert("Failed to add log");
-    }
+  const buttonStyle = {
+    maxWidth: "100%",
+    boxSizing: "border-box",
+    marginTop: "10px",
+    padding: "8px 12px",
+    fontSize: "1rem",
+    backgroundColor: "#333",
+    color: "#eee",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Add New Activity Log</h3>
-      <div>
-        <label>User: </label>
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        maxWidth: "400px",
+        margin: "auto",
+        padding: "1rem",
+        backgroundColor: "#111",
+        borderRadius: "8px",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ color: "#eee", marginBottom: "1rem" }}>Add New Log</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+        User:
         <select
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           required
+          style={inputStyle}
         >
           <option value="">Select user</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.username}
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.username}
             </option>
           ))}
         </select>
-      </div>
+      </label>
 
-      <div>
-        <label>Date: </label>
+      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+        Date:
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          placeholder="YYYY-MM-DD"
+          style={inputStyle}
         />
-      </div>
+      </label>
 
-      <div>
-        <label>Duration (min): </label>
+      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+        Duration (minutes):
         <input
           type="number"
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           required
+          min="1"
+          style={inputStyle}
         />
-      </div>
+      </label>
 
-      <div>
-        <label>Description: </label>
+      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+        Description:
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          placeholder="Optional notes"
+          style={{ ...inputStyle, height: "60px" }}
         />
-      </div>
+      </label>
 
-      <h4>Add Activity Details</h4>
-      <div>
-        <label>Detail: </label>
-        <select value={detailId} onChange={(e) => setDetailId(e.target.value)}>
-          <option value="">Select</option>
-          {details.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.detail_name}
-            </option>
-          ))}
-          <option value="custom">Custom Detail</option>
-        </select>
-      </div>
+      <h3 style={{ color: "#eee" }}>Exercises</h3>
+      {details.map((detail, index) => (
+        <div
+          key={index}
+          style={{
+            marginBottom: "1rem",
+            borderBottom: "1px solid #444",
+            paddingBottom: "10px",
+          }}
+        >
+          <label
+            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
+          >
+            Exercise:
+            <select
+              value={detail.exercise_id}
+              onChange={(e) =>
+                handleDetailChange(index, "exercise_id", e.target.value)
+              }
+              required
+              style={inputStyle}
+            >
+              <option value="">Select exercise</option>
+              {activities.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.detail_name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      {detailId === "custom" && (
-        <div>
-          <label>Custom Name: </label>
-          <input
-            type="text"
-            value={customDetailName}
-            onChange={(e) => setCustomDetailName(e.target.value)}
-          />
+          <label
+            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
+          >
+            Reps:
+            <input
+              type="number"
+              placeholder="Reps"
+              value={detail.reps}
+              onChange={(e) =>
+                handleDetailChange(index, "reps", e.target.value)
+              }
+              required
+              min="1"
+              style={inputStyle}
+            />
+          </label>
+
+          <label
+            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
+          >
+            Tempo (bpm):
+            <input
+              type="number"
+              placeholder="Tempo (bpm)"
+              value={detail.tempo}
+              onChange={(e) =>
+                handleDetailChange(index, "tempo", e.target.value)
+              }
+              style={inputStyle}
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => removeDetail(index)}
+            style={buttonStyle}
+          >
+            Remove
+          </button>
         </div>
-      )}
+      ))}
 
-      <div>
-        <label>Reps: </label>
-        <input
-          type="number"
-          value={reps}
-          onChange={(e) => setReps(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label>Tempo: </label>
-        <input
-          type="number"
-          value={tempo}
-          onChange={(e) => setTempo(e.target.value)}
-        />
-      </div>
-
-      <button type="button" onClick={handleAddDetail}>
-        Add Detail
+      <button type="button" onClick={addDetail} style={buttonStyle}>
+        Add Exercise
       </button>
 
-      <ul>
-        {selectedDetails.map((d, idx) => (
-          <li key={idx}>
-            {d.name} – {d.reps || "-"} reps @ {d.tempo || "-"} BPM
-          </li>
-        ))}
-      </ul>
-
-      <button type="submit">Add Log</button>
+      <br />
+      <br />
+      <button type="submit" style={buttonStyle}>
+        Submit Log
+      </button>
     </form>
   );
 }

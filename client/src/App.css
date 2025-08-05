@@ -1,51 +1,47 @@
-/* Ensure full height for vertical centering */
+/* Full reset and layout control */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-}
-
-/* Global styles */
-body {
   font-family: sans-serif;
   background-color: #f5f5f5;
 }
 
-/* App container – centered layout */
+/* Flex container to center everything */
 .App {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
+  height: 100%; /* Required for full centering */
   text-align: center;
+  padding: 2rem;
 }
 
-/* Form styling */
+/* Style the form */
 form {
-  margin-bottom: 2rem;
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
   width: 100%;
   max-width: 500px;
 }
 
-/* Exercise and session list */
+/* Input rows */
+form div {
+  margin-bottom: 1rem;
+}
+
+/* List of sessions */
 ul {
   list-style: none;
   padding: 0;
   margin-top: 1rem;
 }
 
-/* Optional: Improve spacing for inputs */
-form div {
-  margin-bottom: 1rem;
-}
-
-/* Optional: Button styling */
+/* Buttons */
 button {
   padding: 0.5rem 1rem;
   background-color: #282c34;
@@ -57,4 +53,10 @@ button {
 
 button:hover {
   background-color: #444c5a;
+}
+
+input, select, textarea, button {
+  max-width: 100%;
+  box-sizing: border-box;
+  word-wrap: break-word;
 }
