@@ -70,34 +70,39 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
               marginBottom: "1rem",
               paddingBottom: "1rem",
               borderBottom: "1px solid #ccc",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
           >
-            <strong>{log.username}</strong> —{" "}
-            {new Date(log.date).toLocaleDateString()} — {log.duration} minutes
-            <br />
+            <div>
+              <strong>{log.username}</strong> —{" "}
+              {new Date(log.date).toLocaleDateString()} — {log.duration} minutes
+            </div>
             <em>{log.description}</em>
-            <br />
-            <button
-              onClick={() => setSelectedLog(log)}
-              className={`${styles.button} ${styles.detailButton}`}
-              style={{ marginTop: "8px", marginRight: "8px" }}
-            >
-              View Details
-            </button>
-            <button
-              onClick={() => onEdit(log.id)}
-              className={`${styles.button} ${styles.editButton}`}
-              style={{ marginTop: "8px", marginRight: "8px" }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => onDeleteLog(log.id)}
-              className={`${styles.button} ${styles.deleteButton}`}
-              style={{ marginTop: "8px" }}
-            >
-              Delete Log
-            </button>
+
+            <div style={{ marginTop: "0.5rem" }}>
+              <button
+                onClick={() => setSelectedLog(log)}
+                className={`${styles.button} ${styles.detailButton}`}
+                style={{ marginTop: "8px", marginRight: "8px" }}
+              >
+                View Details
+              </button>
+              <button
+                onClick={() => onEdit(log.id)}
+                className={`${styles.button} ${styles.editButton}`}
+                style={{ marginTop: "8px", marginRight: "8px" }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => onDeleteLog(log.id)}
+                className={`${styles.button} ${styles.deleteButton}`}
+                style={{ marginTop: "8px" }}
+              >
+                Delete Log
+              </button>
+            </div>
           </li>
         ))}
       </ul>

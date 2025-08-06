@@ -41,9 +41,10 @@
 
 .searchSortContainer {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
@@ -55,12 +56,24 @@
   }
 
   .input {
-    flex: 1;
-    margin-bottom: 0;
+    flex: 2;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
   }
 
   .select {
-    flex: 0 0 auto;
+    flex: 1;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  min-width: 120px;
+  background-color: #222;
+  color: white;
   }
 }
 
@@ -155,3 +168,50 @@
   }
 }
 
+/* Wraps the entire form nicely */
+.form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+}
+
+/* Ensures inputs are readable and full-width */
+.input,
+.select,
+textarea,
+input,
+select {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+/* Keep text from breaking layout */
+ul {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* Ensure exercise row wraps properly */
+.exerciseRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+/* Add space between Add/Remove buttons */
+.buttonRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  gap: 10px;
+  flex-wrap: wrap;
+}
