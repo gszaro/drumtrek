@@ -167,7 +167,6 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
       </label>
 
       <h3 className={styles.sectionTitle}>Exercises</h3>
-
       {details.map((detail, index) => (
         <div
           key={index}

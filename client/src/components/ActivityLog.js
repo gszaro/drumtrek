@@ -1,89 +1,69 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
+import LogDetailModal from "./LogDetailModal";
 import styles from "./formStyles.module.css";
 
 function ActivityLog({ logs, onEdit, onDeleteLog }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("dateDesc");
+  const [sortBy, setSortBy] = useState("dateDesc");
+  const [selectedLog, setSelectedLog] = useState(null); // for modal
 
-  // Filter and sort logs in one pass
-  const filteredAndSortedLogs = useMemo(() => {
-    let filtered = logs.filter((log) => {
-      const searchLower = searchTerm.toLowerCase();
-      const inUsername = log.username.toLowerCase().includes(searchLower);
-      const inDescription =
-        log.description && log.description.toLowerCase().includes(searchLower);
-      const inDetails =
-        log.details &&
-        log.details.some((d) =>
-          d.name ? d.name.toLowerCase().includes(searchLower) : false
-        );
-
-      return inUsername || inDescription || inDetails;
+  const filteredLogs = logs
+    .filter((log) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        log.username.toLowerCase().includes(term) ||
+        log.description.toLowerCase().includes(term) ||
+        (log.details &&
+          log.details.some((d) => d.name.toLowerCase().includes(term)))
+      );
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "dateAsc":
+          return new Date(a.date) - new Date(b.date);
+        case "dateDesc":
+          return new Date(b.date) - new Date(a.date);
+        case "durationAsc":
+          return a.duration - b.duration;
+        case "durationDesc":
+          return b.duration - a.duration;
+        case "usernameAsc":
+          return a.username.localeCompare(b.username);
+        case "usernameDesc":
+          return b.username.localeCompare(a.username);
+        default:
+          return 0;
+      }
     });
-
-    switch (sortOption) {
-      case "dateAsc":
-        filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-        break;
-      case "dateDesc":
-        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-        break;
-      case "durationAsc":
-        filtered.sort((a, b) => a.duration - b.duration);
-        break;
-      case "durationDesc":
-        filtered.sort((a, b) => b.duration - a.duration);
-        break;
-      case "usernameAsc":
-        filtered.sort((a, b) => a.username.localeCompare(b.username));
-        break;
-      case "usernameDesc":
-        filtered.sort((a, b) => b.username.localeCompare(a.username));
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
-  }, [logs, searchTerm, sortOption]);
-
-  if (!logs.length) return <p>No activity logs found.</p>;
 
   return (
     <div>
       <h2 style={{ textAlign: "center" }}>Activity Logs</h2>
 
-      {/* Search Above Sort */}
-      <div style={{ marginBottom: "10px" }}>
+      <div className={styles.searchSortContainer}>
         <input
           type="text"
           placeholder="Search by user, description, or exercise"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={styles.input}
-          style={{ width: "100%" }}
         />
-      </div>
-
-      <div style={{ marginBottom: "15px" }}>
         <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
           className={styles.select}
-          style={{ width: "100%" }}
         >
-          <option value="dateDesc">Date (Newest First)</option>
-          <option value="dateAsc">Date (Oldest First)</option>
-          <option value="durationDesc">Duration (Longest First)</option>
-          <option value="durationAsc">Duration (Shortest First)</option>
-          <option value="usernameAsc">Username (A–Z)</option>
-          <option value="usernameDesc">Username (Z–A)</option>
+          <option value="dateDesc">Date ↓</option>
+          <option value="dateAsc">Date ↑</option>
+          <option value="durationDesc">Duration ↓</option>
+          <option value="durationAsc">Duration ↑</option>
+          <option value="usernameAsc">Username A–Z</option>
+          <option value="usernameDesc">Username Z–A</option>
         </select>
       </div>
 
-      {/* Logs List */}
       <ul style={{ listStyle: "none", padding: 0 }}>
-        {filteredAndSortedLogs.map((log) => (
+        {filteredLogs.map((log) => (
           <li
             key={log.id}
             style={{
@@ -96,19 +76,18 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
             {new Date(log.date).toLocaleDateString()} — {log.duration} minutes
             <br />
             <em>{log.description}</em>
-            {log.details && log.details.length > 0 && (
-              <ul>
-                {log.details.map((detail, index) => (
-                  <li key={index}>
-                    {detail.name} — {detail.reps} reps @ {detail.tempo} bpm
-                  </li>
-                ))}
-              </ul>
-            )}
+            <br />
+            <button
+              onClick={() => setSelectedLog(log)}
+              className={`${styles.button} ${styles.detailButton}`}
+              style={{ marginTop: "8px", marginRight: "8px" }}
+            >
+              View Details
+            </button>
             <button
               onClick={() => onEdit(log.id)}
               className={`${styles.button} ${styles.editButton}`}
-              style={{ marginRight: "10px", marginTop: "8px" }}
+              style={{ marginTop: "8px", marginRight: "8px" }}
             >
               Edit
             </button>
@@ -122,6 +101,13 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
           </li>
         ))}
       </ul>
+
+      {selectedLog && (
+        <LogDetailModal
+          log={selectedLog}
+          onClose={() => setSelectedLog(null)}
+        />
+      )}
     </div>
   );
 }
