@@ -45,10 +45,8 @@ function App() {
     )
       return;
 
-    // Save current state for rollback in case of failure
     const previousLogs = [...logs];
 
-    // Remove from UI immediately
     setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId));
 
     try {
@@ -61,7 +59,6 @@ function App() {
         throw new Error(errorData.error || "Delete failed");
       }
     } catch (err) {
-      // Restore previous state if delete failed
       setLogs(previousLogs);
       alert(`Error deleting log: ${err.message}`);
     }
@@ -71,7 +68,7 @@ function App() {
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
-    <div style={{ height: "100vh", position: "relative" }}>
+    <div style={{ height: "1000vh", position: "relative" }}>
       {/* Activity Logs pinned top-left */}
       <div
         style={{
@@ -98,15 +95,15 @@ function App() {
         />
       </div>
 
-      {/* Conditionally show Add or Edit form */}
+      {/* Add/Edit Form container */}
       <div
         style={{
           position: "fixed",
           top: "50%",
           left: "50%",
-          transform: "translate(-50%, -50%)",
+          transform: "translate(-50%, calc(-50% - 1px))", // Moved up 20px for both Add & Edit
           width: "500px",
-          maxHeight: "80vh",
+          maxHeight: "100vh",
           overflowY: "auto",
           padding: "1rem",
           border: "1px solid #555",

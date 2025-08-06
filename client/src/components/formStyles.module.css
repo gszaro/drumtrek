@@ -1,0 +1,93 @@
+.formContainer {
+  max-width: 400px;
+  margin: auto;
+  padding: 1.5rem;
+  background-color: #111;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #eee;
+}
+
+.formTitle {
+  color: #eee;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.label {
+  display: block;
+  margin-bottom: 15px;
+  color: #ccc;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background-color: #222;
+  color: #eee;
+  border: 1px solid #444;
+  font-size: 1rem;
+}
+
+.textarea {
+  height: 60px;
+}
+
+/* Section title class instead of h3 */
+.sectionTitle {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #eee;
+}
+
+/* Buttons */
+.button {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.addButton {
+  background-color: #444;
+  color: #eee;
+}
+
+.removeButton {
+  background-color: #333;
+  color: #eee;
+}
+
+.submitButton {
+  background-color: #555;
+  color: #eee;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.cancelButton {
+  background-color: #a00;
+  color: #eee;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.editButton {
+  background-color: #333;
+  color: #eee;
+}
+
+.deleteButton {
+  background-color: #a00;
+  color: #fff;
+}

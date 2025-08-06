@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styles from "./formStyles.module.css";
 
 function AddLogForm({ onLogAdded }) {
   const [userId, setUserId] = useState("");
@@ -83,54 +84,18 @@ function AddLogForm({ onLogAdded }) {
       .catch(() => setError("Error submitting form"));
   };
 
-  // Shared style for inputs/selects/textareas/buttons to prevent overflow
-  const inputStyle = {
-    maxWidth: "100%",
-    boxSizing: "border-box",
-    marginTop: "5px",
-    padding: "6px",
-    fontSize: "1rem",
-    backgroundColor: "#222",
-    color: "#eee",
-    border: "1px solid #444",
-    borderRadius: "4px",
-  };
-
-  const buttonStyle = {
-    maxWidth: "100%",
-    boxSizing: "border-box",
-    marginTop: "10px",
-    padding: "8px 12px",
-    fontSize: "1rem",
-    backgroundColor: "#333",
-    color: "#eee",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  };
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        maxWidth: "400px",
-        margin: "auto",
-        padding: "1rem",
-        backgroundColor: "#111",
-        borderRadius: "8px",
-        boxSizing: "border-box",
-      }}
-    >
-      <h2 style={{ color: "#eee", marginBottom: "1rem" }}>Add New Log</h2>
+    <form onSubmit={handleSubmit} className={styles.formContainer}>
+      <h2 className={styles.formTitle}>Add New Log</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+      <label className={styles.label}>
         User:
         <select
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           required
-          style={inputStyle}
+          className={styles.select}
         >
           <option value="">Select user</option>
           {users.map((u) => (
@@ -141,18 +106,18 @@ function AddLogForm({ onLogAdded }) {
         </select>
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+      <label className={styles.label}>
         Date:
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           placeholder="YYYY-MM-DD"
-          style={inputStyle}
+          className={styles.input}
         />
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+      <label className={styles.label}>
         Duration (minutes):
         <input
           type="number"
@@ -160,21 +125,21 @@ function AddLogForm({ onLogAdded }) {
           onChange={(e) => setDuration(e.target.value)}
           required
           min="1"
-          style={inputStyle}
+          className={styles.input}
         />
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px", color: "#ccc" }}>
+      <label className={styles.label}>
         Description:
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optional notes"
-          style={{ ...inputStyle, height: "60px" }}
+          className={styles.textarea}
         />
       </label>
 
-      <h3 style={{ color: "#eee" }}>Exercises</h3>
+      <h3 className={styles.sectionTitle}>Exercises</h3>
       {details.map((detail, index) => (
         <div
           key={index}
@@ -184,9 +149,7 @@ function AddLogForm({ onLogAdded }) {
             paddingBottom: "10px",
           }}
         >
-          <label
-            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
-          >
+          <label className={styles.label}>
             Exercise:
             <select
               value={detail.exercise_id}
@@ -194,7 +157,7 @@ function AddLogForm({ onLogAdded }) {
                 handleDetailChange(index, "exercise_id", e.target.value)
               }
               required
-              style={inputStyle}
+              className={styles.select}
             >
               <option value="">Select exercise</option>
               {activities.map((a) => (
@@ -205,9 +168,7 @@ function AddLogForm({ onLogAdded }) {
             </select>
           </label>
 
-          <label
-            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
-          >
+          <label className={styles.label}>
             Reps:
             <input
               type="number"
@@ -218,13 +179,11 @@ function AddLogForm({ onLogAdded }) {
               }
               required
               min="1"
-              style={inputStyle}
+              className={styles.input}
             />
           </label>
 
-          <label
-            style={{ display: "block", marginBottom: "5px", color: "#ccc" }}
-          >
+          <label className={styles.label}>
             Tempo (bpm):
             <input
               type="number"
@@ -233,27 +192,42 @@ function AddLogForm({ onLogAdded }) {
               onChange={(e) =>
                 handleDetailChange(index, "tempo", e.target.value)
               }
-              style={inputStyle}
+              className={styles.input}
             />
           </label>
 
-          <button
-            type="button"
-            onClick={() => removeDetail(index)}
-            style={buttonStyle}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "10px",
+            }}
           >
-            Remove
-          </button>
+            {index === details.length - 1 && (
+              <button
+                type="button"
+                onClick={addDetail}
+                className={`${styles.button} ${styles.addButton}`}
+              >
+                Add Exercise
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => removeDetail(index)}
+              className={`${styles.button} ${styles.removeButton}`}
+            >
+              Remove
+            </button>
+          </div>
         </div>
       ))}
 
-      <button type="button" onClick={addDetail} style={buttonStyle}>
-        Add Exercise
-      </button>
-
       <br />
-      <br />
-      <button type="submit" style={buttonStyle}>
+      <button
+        type="submit"
+        className={`${styles.button} ${styles.submitButton}`}
+      >
         Submit Log
       </button>
     </form>

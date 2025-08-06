@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styles from "./formStyles.module.css";
 
 function EditLogForm({ logId, onCancel, onUpdated }) {
   const [userId, setUserId] = useState("");
@@ -11,7 +12,6 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load users and activities once
   useEffect(() => {
     fetch("http://localhost:5050/api/users")
       .then((res) => res.json())
@@ -24,7 +24,6 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
       .catch(() => setError("Failed to load activities"));
   }, []);
 
-  // Load the log to edit
   useEffect(() => {
     if (!logId) return;
 
@@ -114,36 +113,17 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
   if (loading) return <p>Loading log data...</p>;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        maxWidth: "400px",
-        margin: "auto",
-        padding: "1rem",
-        backgroundColor: "#111",
-        borderRadius: "8px",
-        color: "#eee",
-      }}
-    >
-      <h2>Edit Log</h2>
+    <form onSubmit={handleSubmit} className={styles.formContainer}>
+      <h2 className={styles.formTitle}>Edit Log</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <label style={{ display: "block", marginBottom: "10px" }}>
+      <label className={styles.label}>
         User:
         <select
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           required
-          style={{
-            width: "100%",
-            marginTop: "5px",
-            padding: "6px",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            backgroundColor: "#222",
-            color: "#eee",
-            border: "1px solid #444",
-          }}
+          className={styles.select}
         >
           <option value="">Select user</option>
           {users.map((u) => (
@@ -154,26 +134,17 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
         </select>
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px" }}>
+      <label className={styles.label}>
         Date:
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          style={{
-            width: "100%",
-            marginTop: "5px",
-            padding: "6px",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            backgroundColor: "#222",
-            color: "#eee",
-            border: "1px solid #444",
-          }}
+          className={styles.input}
         />
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px" }}>
+      <label className={styles.label}>
         Duration (minutes):
         <input
           type="number"
@@ -181,39 +152,22 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
           onChange={(e) => setDuration(e.target.value)}
           required
           min="1"
-          style={{
-            width: "100%",
-            marginTop: "5px",
-            padding: "6px",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            backgroundColor: "#222",
-            color: "#eee",
-            border: "1px solid #444",
-          }}
+          className={styles.input}
         />
       </label>
 
-      <label style={{ display: "block", marginBottom: "10px" }}>
+      <label className={styles.label}>
         Description:
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{
-            width: "100%",
-            marginTop: "5px",
-            padding: "6px",
-            boxSizing: "border-box",
-            borderRadius: "4px",
-            backgroundColor: "#222",
-            color: "#eee",
-            border: "1px solid #444",
-          }}
+          className={styles.textarea}
           rows={4}
         />
       </label>
 
-      <h3>Exercises</h3>
+      <h3 className={styles.sectionTitle}>Exercises</h3>
+
       {details.map((detail, index) => (
         <div
           key={index}
@@ -223,7 +177,7 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
             paddingBottom: "10px",
           }}
         >
-          <label style={{ display: "block", marginBottom: "5px" }}>
+          <label className={styles.label}>
             Exercise:
             <select
               value={detail.exercise_id}
@@ -231,16 +185,7 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
                 handleDetailChange(index, "exercise_id", e.target.value)
               }
               required
-              style={{
-                width: "100%",
-                marginTop: "5px",
-                padding: "6px",
-                boxSizing: "border-box",
-                borderRadius: "4px",
-                backgroundColor: "#222",
-                color: "#eee",
-                border: "1px solid #444",
-              }}
+              className={styles.select}
             >
               <option value="">Select exercise</option>
               {activities.map((a) => (
@@ -251,7 +196,7 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
             </select>
           </label>
 
-          <label style={{ display: "block", marginBottom: "5px" }}>
+          <label className={styles.label}>
             Reps:
             <input
               type="number"
@@ -262,20 +207,11 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
               }
               required
               min="1"
-              style={{
-                width: "100%",
-                marginTop: "5px",
-                padding: "6px",
-                boxSizing: "border-box",
-                borderRadius: "4px",
-                backgroundColor: "#222",
-                color: "#eee",
-                border: "1px solid #444",
-              }}
+              className={styles.input}
             />
           </label>
 
-          <label style={{ display: "block", marginBottom: "5px" }}>
+          <label className={styles.label}>
             Tempo (bpm):
             <input
               type="number"
@@ -284,69 +220,41 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
               onChange={(e) =>
                 handleDetailChange(index, "tempo", e.target.value)
               }
-              style={{
-                width: "100%",
-                marginTop: "5px",
-                padding: "6px",
-                boxSizing: "border-box",
-                borderRadius: "4px",
-                backgroundColor: "#222",
-                color: "#eee",
-                border: "1px solid #444",
-              }}
+              className={styles.input}
             />
           </label>
 
-          <button
-            type="button"
-            onClick={() => removeDetail(index)}
+          <div
             style={{
+              display: "flex",
+              justifyContent: "space-between",
               marginTop: "10px",
-              padding: "8px 12px",
-              fontSize: "1rem",
-              backgroundColor: "#333",
-              color: "#eee",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
             }}
           >
-            Remove
-          </button>
+            {index === details.length - 1 && (
+              <button
+                type="button"
+                onClick={addDetail}
+                className={`${styles.button} ${styles.addButton}`}
+              >
+                Add Exercise
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => removeDetail(index)}
+              className={`${styles.button} ${styles.removeButton}`}
+            >
+              Remove
+            </button>
+          </div>
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addDetail}
-        style={{
-          marginTop: "10px",
-          padding: "8px 12px",
-          fontSize: "1rem",
-          backgroundColor: "#333",
-          color: "#eee",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Add Exercise
-      </button>
-
-      <br />
       <br />
       <button
         type="submit"
-        style={{
-          padding: "10px 15px",
-          fontSize: "1rem",
-          backgroundColor: "#555",
-          color: "#eee",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          width: "100%",
-        }}
+        className={`${styles.button} ${styles.submitButton}`}
       >
         Save Changes
       </button>
@@ -354,17 +262,7 @@ function EditLogForm({ logId, onCancel, onUpdated }) {
       <button
         type="button"
         onClick={onCancel}
-        style={{
-          marginTop: "10px",
-          padding: "10px 15px",
-          fontSize: "1rem",
-          backgroundColor: "#a00",
-          color: "#eee",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          width: "100%",
-        }}
+        className={`${styles.button} ${styles.cancelButton}`}
       >
         Cancel
       </button>
