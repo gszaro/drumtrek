@@ -15,21 +15,14 @@ app.get("/", (req, res) => {
 });
 
 // ===== USERS =====
-app.get("/api/users", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM users ORDER BY username");
-    res.json(result.rows);
-  } catch (err) {
-    console.error("❌ Failed to fetch users:", err);
-    res.status(500).json({ error: "Failed to load users" });
-  }
-});
+const usersRouter = require("./routes/users");
+app.use("/api/users", usersRouter);
 
-// ===== EXERCISES (master list of activity details) =====
-const exercisesRoutes = require("./routes/exercisesRoutes");
-app.use("/api/exercises", exercisesRoutes);
+// ===== EXERCISES =====
+const exerciseRoutes = require("./routes/exerciseRoutes"); // match your file
+app.use("/api/exercises", exerciseRoutes);
 
-// ===== LOG DETAILS (individual line items for a log) =====
+// ===== LOG DETAILS (optional, single detail entry) =====
 app.post("/api/log-details", async (req, res) => {
   const { session_id, exercise_id, reps, tempo, name } = req.body;
 
@@ -57,9 +50,9 @@ app.post("/api/log-details", async (req, res) => {
   }
 });
 
-// ===== LOGS (activity logs with their details) =====
-const logsRoutes = require("./routes/logsRoutes");
-app.use("/api/logs", logsRoutes);
+// ===== LOGS / SESSIONS =====
+const sessionRoutes = require("./routes/sessionRoutes"); // updated from logsRoutes
+app.use("/api/logs", sessionRoutes);
 
 // ===== START SERVER =====
 app.listen(PORT, () => {
