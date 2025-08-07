@@ -25,20 +25,11 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-// ===== ACTIVITY DETAILS (master list) =====
-app.get("/api/details", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM activity_details ORDER BY detail_name"
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error("❌ Failed to fetch details:", err);
-    res.status(500).json({ error: "Failed to load details" });
-  }
-});
+// ===== EXERCISES (master list of activity details) =====
+const exercisesRoutes = require("./routes/exercisesRoutes");
+app.use("/api/exercises", exercisesRoutes);
 
-// ===== LOG DETAILS (individual log entries) =====
+// ===== LOG DETAILS (individual line items for a log) =====
 app.post("/api/log-details", async (req, res) => {
   const { session_id, exercise_id, reps, tempo, name } = req.body;
 
@@ -66,10 +57,11 @@ app.post("/api/log-details", async (req, res) => {
   }
 });
 
-// ===== ACTIVITY LOG ROUTES =====
+// ===== LOGS (activity logs with their details) =====
 const logsRoutes = require("./routes/logsRoutes");
 app.use("/api/logs", logsRoutes);
 
+// ===== START SERVER =====
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

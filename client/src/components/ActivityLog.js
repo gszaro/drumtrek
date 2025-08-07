@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import LogDetailModal from "./LogDetailModal";
+import EditLogModal from "./EditLogModal";
 import styles from "./formStyles.module.css";
 
-function ActivityLog({ logs, onEdit, onDeleteLog }) {
+function ActivityLog({
+  logs,
+  users = [],
+  details = [],
+  onEdit,
+  onDeleteLog,
+  onRefresh,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("dateDesc");
-  const [selectedLog, setSelectedLog] = useState(null); // for modal
+  const [selectedLog, setSelectedLog] = useState(null); // For view modal
+  const [editLog, setEditLog] = useState(null); // For edit modal
 
   const filteredLogs = logs
     .filter((log) => {
@@ -89,7 +98,7 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
                 View Details
               </button>
               <button
-                onClick={() => onEdit(log.id)}
+                onClick={() => setEditLog(log)}
                 className={`${styles.button} ${styles.editButton}`}
                 style={{ marginTop: "8px", marginRight: "8px" }}
               >
@@ -111,6 +120,19 @@ function ActivityLog({ logs, onEdit, onDeleteLog }) {
         <LogDetailModal
           log={selectedLog}
           onClose={() => setSelectedLog(null)}
+        />
+      )}
+
+      {editLog && (
+        <EditLogModal
+          log={editLog}
+          users={users}
+          detailsMaster={details}
+          onClose={() => setEditLog(null)}
+          onUpdate={() => {
+            setEditLog(null);
+            if (onRefresh) onRefresh();
+          }}
         />
       )}
     </div>
