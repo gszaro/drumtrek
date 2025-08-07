@@ -1,157 +1,209 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./formStyles.module.css";
 
 function AddLogForm({ onLogAdded }) {
-  const [username, setUsername] = useState("");
-  const [date, setDate] = useState("");
-  const [duration, setDuration] = useState("");
-  const [description, setDescription] = useState("");
-  const [details, setDetails] = useState([{ name: "", reps: "", tempo: "" }]);
+  const [users, setUsers] = useState([]);
+  const [exercises, setExercises] = useState([]);
+  const [form, setForm] = useState({
+    user_id: "",
+    date: new Date().toISOString().split("T")[0],
+    duration: "",
+    description: "",
+    details: [],
+  });
 
-  const handleDetailChange = (index, field, value) => {
-    const updatedDetails = [...details];
-    updatedDetails[index][field] = value;
-    setDetails(updatedDetails);
-  };
+  const [newDetail, setNewDetail] = useState({
+    exercise_id: "",
+    name: "",
+    reps: "",
+    tempo: "",
+  });
 
-  const addExercise = () => {
-    setDetails([...details, { name: "", reps: "", tempo: "" }]);
-  };
+  useEffect(() => {
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then(setUsers)
+      .catch(console.error);
 
-  const removeExercise = () => {
-    if (details.length > 1) {
-      setDetails(details.slice(0, -1));
+    fetch("/api/exercises")
+      .then((res) => res.json())
+      .then(setExercises)
+      .catch(console.error);
+  }, []);
+
+  const handleAddDetail = () => {
+    if (
+      !newDetail.reps ||
+      !newDetail.tempo ||
+      (!newDetail.exercise_id && !newDetail.name)
+    ) {
+      alert("Please fill out reps, tempo, and either select or type a name.");
+      return;
     }
+
+    setForm((prev) => ({
+      ...prev,
+      details: [...prev.details, newDetail],
+    }));
+
+    setNewDetail({
+      exercise_id: "",
+      name: "",
+      reps: "",
+      tempo: "",
+    });
+  };
+
+  const handleDeleteDetail = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      details: prev.details.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newLog = {
-      username,
-      date,
-      duration: parseInt(duration),
-      description,
-      details,
-    };
+
+    if (!form.user_id || !form.duration || form.details.length === 0) {
+      alert("Please fill all required fields and add at least one exercise.");
+      return;
+    }
 
     try {
-      const res = await fetch("http://localhost:5050/api/logs", {
+      const res = await fetch("/api/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newLog),
+        body: JSON.stringify(form),
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to add log");
-      }
+      if (!res.ok) throw new Error("Failed to add log");
 
-      onLogAdded();
-      setUsername("");
-      setDate("");
-      setDuration("");
-      setDescription("");
-      setDetails([{ name: "", reps: "", tempo: "" }]);
+      const data = await res.json();
+      alert("✅ Log added!");
+      setForm({
+        user_id: "",
+        date: new Date().toISOString().split("T")[0],
+        duration: "",
+        description: "",
+        details: [],
+      });
+      if (onLogAdded) onLogAdded(data);
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      console.error("❌ Error adding log:", err);
+      alert("Something went wrong");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <h2 className={styles.heading}>Add New Log</h2>
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <h2>Add Practice Log</h2>
 
-      <div className={styles.row}>
-        <label>User:</label>
-        <select
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        >
-          <option value="">Select user</option>
-          <option value="gregdrums">gregdrums</option>
-          <option value="jazzcat">jazzcat</option>
-        </select>
-      </div>
+      <label>User:</label>
+      <select
+        value={form.user_id}
+        onChange={(e) => setForm({ ...form, user_id: e.target.value })}
+        required
+      >
+        <option value="">Select user</option>
+        {users.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.username}
+          </option>
+        ))}
+      </select>
 
-      <div className={styles.row}>
-        <label>Date:</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
-      </div>
+      <label>Date:</label>
+      <input
+        type="date"
+        value={form.date}
+        onChange={(e) => setForm({ ...form, date: e.target.value })}
+      />
 
-      <div className={styles.row}>
-        <label>Duration (minutes):</label>
-        <input
-          type="number"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          required
-        />
-      </div>
+      <label>Duration (minutes):</label>
+      <input
+        type="number"
+        value={form.duration}
+        onChange={(e) => setForm({ ...form, duration: e.target.value })}
+        required
+      />
 
-      <div className={styles.row}>
-        <label>Description:</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder="Optional notes"
-        />
-      </div>
-
-      <h3 className={styles.subheading}>Exercises</h3>
-      {details.map((detail, index) => (
-        <div key={index} className={styles.exerciseRow}>
-          <select
-            value={detail.name}
-            onChange={(e) => handleDetailChange(index, "name", e.target.value)}
-            required
-          >
-            <option value="">Select exercise</option>
-            <option value="rudiments">Rudiments</option>
-            <option value="independence">Independence</option>
-            <option value="groove">Groove</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Reps"
-            value={detail.reps}
-            onChange={(e) => handleDetailChange(index, "reps", e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Tempo (bpm)"
-            value={detail.tempo}
-            onChange={(e) => handleDetailChange(index, "tempo", e.target.value)}
-            required
-          />
-        </div>
-      ))}
-
-      <div className={styles.buttonRow}>
-        <button type="button" onClick={addExercise} className={styles.button}>
-          Add Exercise
-        </button>
-        <button
-          type="button"
-          onClick={removeExercise}
-          className={styles.button}
-        >
-          Remove
-        </button>
-      </div>
+      <label>Notes (optional):</label>
+      <textarea
+        value={form.description}
+        onChange={(e) => setForm({ ...form, description: e.target.value })}
+      />
 
       <hr />
+      <h3>Add Exercises</h3>
 
-      <button type="submit" className={styles.submitButton}>
-        Submit Log
+      <label>Pick from Master List:</label>
+      <select
+        value={newDetail.exercise_id}
+        onChange={(e) =>
+          setNewDetail({
+            ...newDetail,
+            exercise_id: e.target.value,
+            name: "",
+          })
+        }
+      >
+        <option value="">None</option>
+        {exercises.map((ex) => (
+          <option key={ex.id} value={ex.id}>
+            {ex.detail_name}
+          </option>
+        ))}
+      </select>
+
+      <label>Or enter exercise name manually:</label>
+      <input
+        type="text"
+        value={newDetail.name}
+        onChange={(e) =>
+          setNewDetail({
+            ...newDetail,
+            name: e.target.value,
+            exercise_id: "",
+          })
+        }
+        placeholder="e.g. Paradiddle Groove"
+      />
+
+      <label>Reps:</label>
+      <input
+        type="number"
+        value={newDetail.reps}
+        onChange={(e) => setNewDetail({ ...newDetail, reps: e.target.value })}
+        required
+      />
+
+      <label>Tempo (BPM):</label>
+      <input
+        type="number"
+        value={newDetail.tempo}
+        onChange={(e) => setNewDetail({ ...newDetail, tempo: e.target.value })}
+        required
+      />
+
+      <button type="button" onClick={handleAddDetail}>
+        ➕ Add Exercise
       </button>
+
+      <ul className={styles.exerciseList}>
+        {form.details.map((d, idx) => (
+          <li key={idx}>
+            {d.name ||
+              exercises.find((ex) => ex.id === parseInt(d.exercise_id))
+                ?.detail_name}{" "}
+            — {d.reps} reps @ {d.tempo} bpm{" "}
+            <button type="button" onClick={() => handleDeleteDetail(idx)}>
+              ❌
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button type="submit">Submit</button>
     </form>
   );
 }
