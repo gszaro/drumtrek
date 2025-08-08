@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const pool = require("./db/db");
 require("dotenv").config();
 
 const app = express();
@@ -9,27 +8,21 @@ const PORT = process.env.PORT || 5050;
 app.use(cors());
 app.use(express.json());
 
-// ===== HEALTH CHECK =====
-app.get("/", (req, res) => {
-  res.send("Activity Tracker API is running");
-});
+// Health
+app.get("/", (_req, res) => res.send("Activity Tracker API is running"));
 
-// ===== USERS =====
-const usersRouter = require("./routes/users");
-app.use("/api/users", usersRouter);
+// Routes
+app.use("/api/users", require("./routes/users"));
+app.use("/api/exercises", require("./routes/exerciseRoutes"));
+app.use("/api/logs", require("./routes/sessionRoutes"));
 
-// ===== EXERCISES =====
-const exerciseRoutes = require("./routes/exerciseRoutes"); // match your file
-app.use("/api/exercises", exerciseRoutes);
-
-// ===== LOG DETAILS (optional, single detail entry) =====
+// Optional: single detail add endpoint (not required by UI)
+const pool = require("./db");
 app.post("/api/log-details", async (req, res) => {
   const { session_id, exercise_id, reps, tempo, name } = req.body;
-
   if (!session_id || (!exercise_id && !name)) {
     return res.status(400).json({ error: "Missing detail reference" });
   }
-
   try {
     const result = await pool.query(
       `INSERT INTO log_details (session_id, exercise_id, name, reps, tempo)
@@ -50,11 +43,6 @@ app.post("/api/log-details", async (req, res) => {
   }
 });
 
-// ===== LOGS / SESSIONS =====
-const sessionRoutes = require("./routes/sessionRoutes"); // updated from logsRoutes
-app.use("/api/logs", sessionRoutes);
-
-// ===== START SERVER =====
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

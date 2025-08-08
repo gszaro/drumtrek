@@ -1,23 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db/db");
+const pool = require("../db/db.js");
 
 // GET all logs with their details
-router.get("/", async (req, res) => {
+router.get("/", async (_req, res) => {
   try {
     const logResult = await pool.query(`
       SELECT al.id, al.user_id, al.date, al.duration, al.description, u.username
       FROM activity_logs al
       JOIN users u ON al.user_id = u.id
-      ORDER BY al.date DESC
+      ORDER BY al.date DESC, al.id DESC
     `);
 
     const logs = logResult.rows;
 
     const detailResult = await pool.query(`
-      SELECT ld.session_id, ld.exercise_id, ld.reps, ld.tempo, ld.name, ad.detail_name
+      SELECT ld.session_id, ld.exercise_id, ld.reps, ld.tempo, ld.name,
+             e.name AS detail_name
       FROM log_details ld
-      LEFT JOIN activity_details ad ON ld.exercise_id = ad.id
+      LEFT JOIN exercises e ON ld.exercise_id = e.id
     `);
 
     const allDetails = detailResult.rows;
@@ -40,9 +41,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST new log with details in one request
+// CREATE log with details
 router.post("/", async (req, res) => {
-  const { user_id, date, duration, description, details } = req.body;
+  const { user_id, date, duration, description, details } = req.body || {};
   const client = await pool.connect();
 
   if (!user_id || !duration) {
@@ -56,8 +57,7 @@ router.post("/", async (req, res) => {
 
     const logInsert = await client.query(
       `INSERT INTO activity_logs (user_id, date, duration, description)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id`,
+       VALUES ($1, $2, $3, $4) RETURNING id`,
       [user_id, date || new Date(), duration, description || ""]
     );
 
@@ -90,12 +90,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET a single log by id with its details
+// GET single log with details
 router.get("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
-  if (isNaN(logId)) {
-    return res.status(400).json({ error: "Invalid log id" });
-  }
+  if (isNaN(logId)) return res.status(400).json({ error: "Invalid log id" });
 
   try {
     const logResult = await pool.query(
@@ -105,17 +103,15 @@ router.get("/:id", async (req, res) => {
        WHERE al.id = $1`,
       [logId]
     );
-
-    if (logResult.rows.length === 0) {
+    if (logResult.rows.length === 0)
       return res.status(404).json({ error: "Log not found" });
-    }
-
     const log = logResult.rows[0];
 
     const detailsResult = await pool.query(
-      `SELECT ld.id, ld.session_id, ld.exercise_id, ld.reps, ld.tempo, ld.name, ad.detail_name
+      `SELECT ld.id, ld.session_id, ld.exercise_id, ld.reps, ld.tempo, ld.name,
+              e.name AS detail_name
        FROM log_details ld
-       LEFT JOIN activity_details ad ON ld.exercise_id = ad.id
+       LEFT JOIN exercises e ON ld.exercise_id = e.id
        WHERE ld.session_id = $1`,
       [logId]
     );
@@ -135,14 +131,12 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PUT update a log and replace its details
+// UPDATE log + replace details
 router.put("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
-  const { user_id, date, duration, description, details } = req.body;
+  const { user_id, date, duration, description, details } = req.body || {};
 
-  if (isNaN(logId)) {
-    return res.status(400).json({ error: "Invalid log id" });
-  }
+  if (isNaN(logId)) return res.status(400).json({ error: "Invalid log id" });
   if (!user_id || !duration) {
     return res
       .status(400)
@@ -192,18 +186,15 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE a whole log and its details
+// DELETE log
 router.delete("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
-  if (isNaN(logId)) {
-    return res.status(400).json({ error: "Invalid log id" });
-  }
+  if (isNaN(logId)) return res.status(400).json({ error: "Invalid log id" });
 
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
-
     await client.query("DELETE FROM log_details WHERE session_id = $1", [
       logId,
     ]);
@@ -211,12 +202,10 @@ router.delete("/:id", async (req, res) => {
       "DELETE FROM activity_logs WHERE id = $1",
       [logId]
     );
-
     if (result.rowCount === 0) {
       await client.query("ROLLBACK");
       return res.status(404).json({ error: "Log not found" });
     }
-
     await client.query("COMMIT");
     res.status(200).json({ message: "Log deleted successfully" });
   } catch (err) {

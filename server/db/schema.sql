@@ -1,18 +1,15 @@
--- Drop tables if they exist (for development reset)
-DROP TABLE IF EXISTS session_exercises;
-DROP TABLE IF EXISTS practice_sessions;
+DROP TABLE IF EXISTS log_details;
+DROP TABLE IF EXISTS activity_logs;
 DROP TABLE IF EXISTS exercises;
 DROP TABLE IF EXISTS users;
 
--- Users table
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL
+  email TEXT UNIQUE,
+  password_hash TEXT
 );
 
--- Exercises table
 CREATE TABLE exercises (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -20,20 +17,19 @@ CREATE TABLE exercises (
   description TEXT
 );
 
--- Practice sessions table
-CREATE TABLE practice_sessions (
+CREATE TABLE activity_logs (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   date DATE DEFAULT CURRENT_DATE,
-  duration_minutes INTEGER NOT NULL,
-  notes TEXT
+  duration INTEGER NOT NULL,
+  description TEXT
 );
 
--- Join table for exercises practiced during a session
-CREATE TABLE session_exercises (
+CREATE TABLE log_details (
   id SERIAL PRIMARY KEY,
-  session_id INTEGER REFERENCES practice_sessions(id) ON DELETE CASCADE,
+  session_id INTEGER NOT NULL REFERENCES activity_logs(id) ON DELETE CASCADE,
   exercise_id INTEGER REFERENCES exercises(id),
   reps INTEGER,
-  tempo INTEGER
+  tempo INTEGER,
+  name TEXT
 );
