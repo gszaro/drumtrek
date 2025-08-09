@@ -1,145 +1,103 @@
-Activity Log Tracker
-Overview
-Activity Log Tracker is a full-stack web application built with React, Express, and PostgreSQL for tracking and managing activity logs with detailed exercise entries. The app supports full CRUD operations, offers a clean and responsive interface, and ensures instant updates with an optimized user experience.
-
-This project demonstrates modern JavaScript development practices, backend data management, and frontend state optimization. It is designed to function as an internal productivity and tracking tool with scalability in mind.
+DrumTrek — Client
+React frontend for DrumTrek, a drumming practice tracker. Connects to the Node/Express API to list, add, edit, and delete practice logs.
 
 Features
-Core Functionality
-View all activity logs with associated exercise details
+View practice logs with date, duration, description, and exercise details
 
-Add new logs with multiple exercise entries
+Add new logs with per-exercise reps/tempo
 
-Edit logs and update associated details
+Edit or delete existing logs
 
-Optimistic deletion for instant UI updates without page refresh
+Simple, responsive UI
 
-Robust backend delete route with transactional safety and rollback support
-
-User Experience
-Responsive UI designed for ease of use
-
-Real-time visual updates on data changes
-
-Clear error handling and confirmation prompts
-
-Scrollable log list with fixed position for quick navigation
-
-Backend Architecture
-Node.js and Express REST API
-
-PostgreSQL relational database with normalized schema
-
-Secure parameterized queries to prevent SQL injection
-
-Structured route organization for scalability
-
-Transactional handling for create, update, and delete operations
-
-Tech Stack
-Frontend
-
-React
-
-JavaScript (ES6+)
-
-CSS3
-
-Backend
-
-Node.js
-
-Express
-
-PostgreSQL
-
-pg (node-postgres)
-
-Installation
 Prerequisites
-Node.js v16+
+Node.js 18+ and npm
 
-PostgreSQL 13+
+DrumTrek server running (default: http://localhost:5050)
 
-Setup Steps
-Clone the repository
-
-bash
-Copy
-Edit
-git clone https://github.com/yourusername/activity-log-tracker.git
-cd activity-log-tracker
-Install dependencies for backend and frontend
-
-bash
-Copy
-Edit
-cd server
-npm install
-cd ../client
-npm install
-Configure the database connection
-
-Create a PostgreSQL database
-
-Update .env in the backend with your database URL
-
-Example .env file:
+Environment
+Create /client/.env (no quotes):
 
 ini
 Copy
 Edit
-DATABASE_URL=postgresql://username:password@localhost:5432/yourdbname
-PORT=5050
-Run database migrations
+REACT_APP_API_BASE_URL=http://localhost:5050
+If omitted, the app defaults to http://localhost:5050.
 
-Create tables for users, activity_logs, log_details, and activity_details
-
-Seed initial data if required
-
-Start the development servers
-
+Install & Run
 bash
 Copy
 Edit
 
-# Start backend
+# from repo root
 
-cd server
-npm run dev
-
-# Start frontend
-
-cd ../client
+cd client
+npm install
 npm start
-Folder Structure
+App runs at http://localhost:3000.
+
+Scripts
 bash
 Copy
 Edit
-activity-log-tracker/
-├── client/ # React frontend
-│ ├── src/
-│ │ ├── components/ # UI components
-│ │ ├── App.js # Main app component
-│ │ └── index.js # React entry point
-│ └── public/
-├── server/ # Express backend
-│ ├── routes/ # API route definitions
-│ ├── db/ # Database connection
-│ ├── server.js # Server entry point
-│ └── .env # Environment variables
-└── README.md
-Roadmap
-Planned enhancements include:
+npm start # dev server with hot reload
+npm run build # production build in /build
+npm test # react-scripts tests (if configured)
+npm run lint # optional, if ESLint is set up
+API Expectations
+The client expects these endpoints on the server:
 
-Search and filter functionality for activity logs
+GET /api/logs → list logs
 
-Sortable columns for date, duration, and username
+POST /api/logs → create log
 
-Role-based access control for different user permissions
+PUT /api/logs/:id → update log
 
-Activity analytics dashboard with charts and trends
+DELETE /api/logs/:id → delete log
 
-Export logs to PDF or CSV formats
+Response shape (example):
 
-Real-time updates with WebSockets
+json
+Copy
+Edit
+[
+{
+"id": 1,
+"user_id": 1,
+"date": "2025-08-01T04:00:00.000Z",
+"duration": 45,
+"description": "Paradiddles and transitions",
+"username": "gregdrums",
+"details": [
+{"name":"Paradiddle","reps":4,"tempo":90},
+{"name":"Flam Tap","reps":3,"tempo":80}
+]
+}
+]
+Project Structure (client)
+css
+Copy
+Edit
+client/
+src/
+components/
+ActivityLog.jsx
+AddLogForm.jsx
+EditLogForm.jsx
+App.js
+index.js
+App.css
+Common Gotchas
+CORS: ensure the server enables CORS for http://localhost:3000.
+
+API base URL: mismatch causes fetch failures—confirm REACT_APP_API_BASE_URL.
+
+Pool/DB errors: if server logs show pool.query is not a function, verify pg setup and exports.
+
+Build & Deploy
+bash
+Copy
+Edit
+npm run build
+
+# serve /client/build with your static host or reverse-proxy behind your API
