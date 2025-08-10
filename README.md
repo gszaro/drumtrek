@@ -1,4 +1,5 @@
 DrumTrek
+
 Practice Smarter. Play Better.
 DrumTrek is a full-stack practice tracking application built for drummers who want precision, accountability, and measurable progress in their craft. Featuring a clean React interface and a robust Node.js + PostgreSQL backend, DrumTrek lets you log practice sessions, manage exercises, and review your growth over time.
 
