@@ -7,7 +7,6 @@ function ActivityLog({
   logs,
   users = [],
   details = [],
-  onEdit,
   onDeleteLog,
   onRefresh,
 }) {
@@ -16,14 +15,16 @@ function ActivityLog({
   const [selectedLog, setSelectedLog] = useState(null); // For view modal
   const [editLog, setEditLog] = useState(null); // For edit modal
 
-  const filteredLogs = logs
+  const filteredLogs = (logs || [])
     .filter((log) => {
       const term = searchTerm.toLowerCase();
+      const username = (log.username || "").toLowerCase();
+      const description = (log.description || "").toLowerCase();
+      const hasDetailMatch =
+        Array.isArray(log.details) &&
+        log.details.some((d) => (d.name || "").toLowerCase().includes(term));
       return (
-        log.username.toLowerCase().includes(term) ||
-        log.description.toLowerCase().includes(term) ||
-        (log.details &&
-          log.details.some((d) => d.name.toLowerCase().includes(term)))
+        username.includes(term) || description.includes(term) || hasDetailMatch
       );
     })
     .sort((a, b) => {
@@ -33,13 +34,13 @@ function ActivityLog({
         case "dateDesc":
           return new Date(b.date) - new Date(a.date);
         case "durationAsc":
-          return a.duration - b.duration;
+          return (a.duration || 0) - (b.duration || 0);
         case "durationDesc":
-          return b.duration - a.duration;
+          return (b.duration || 0) - (a.duration || 0);
         case "usernameAsc":
-          return a.username.localeCompare(b.username);
+          return (a.username || "").localeCompare(b.username || "");
         case "usernameDesc":
-          return b.username.localeCompare(a.username);
+          return (b.username || "").localeCompare(a.username || "");
         default:
           return 0;
       }
@@ -84,10 +85,11 @@ function ActivityLog({
             }}
           >
             <div>
-              <strong>{log.username}</strong> —{" "}
-              {new Date(log.date).toLocaleDateString()} — {log.duration} minutes
+              <strong>{log.username || "Unknown"}</strong> —{" "}
+              {log.date ? new Date(log.date).toLocaleDateString() : "—"} —{" "}
+              {log.duration ?? 0} minutes
             </div>
-            <em>{log.description}</em>
+            {log.description ? <em>{log.description}</em> : <em>No notes</em>}
 
             <div style={{ marginTop: "0.5rem" }}>
               <button
@@ -105,7 +107,7 @@ function ActivityLog({
                 Edit
               </button>
               <button
-                onClick={() => onDeleteLog(log.id)}
+                onClick={() => onDeleteLog && onDeleteLog(log.id)}
                 className={`${styles.button} ${styles.deleteButton}`}
                 style={{ marginTop: "8px" }}
               >

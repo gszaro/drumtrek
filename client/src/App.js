@@ -1,39 +1,57 @@
 import React, { useState, useEffect } from "react";
 import ActivityLog from "./components/ActivityLog";
 import AddLogForm from "./components/AddLogForm";
-import EditLogForm from "./components/EditLogForm";
 import "./App.css";
 
 function App() {
   const [logs, setLogs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editLogId, setEditLogId] = useState(null);
 
   const fetchLogs = async () => {
-    setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:5050/api/logs");
-      if (!res.ok) {
-        throw new Error(`Error fetching logs: ${res.status}`);
-      }
+      const res = await fetch("/api/logs");
+      if (!res.ok) throw new Error(`Error fetching logs: ${res.status}`);
       const data = await res.json();
       setLogs(data);
-    } catch (error) {
+    } catch (err) {
       setError("Failed to load logs");
-    } finally {
-      setLoading(false);
     }
   };
 
+  const fetchUsersAndExercises = async () => {
+    try {
+      const [uRes, eRes] = await Promise.all([
+        fetch("/api/users"),
+        fetch("/api/exercises"),
+      ]);
+      if (!uRes.ok) throw new Error("Users fetch failed");
+      if (!eRes.ok) throw new Error("Exercises fetch failed");
+      const [uData, eData] = await Promise.all([uRes.json(), eRes.json()]);
+      setUsers(uData);
+      setExercises(eData);
+    } catch (err) {
+      console.error(err);
+      // Not fatal to the whole app, but edit modal lists will be empty if this fails
+    }
+  };
+
+  const initialLoad = async () => {
+    setLoading(true);
+    await Promise.all([fetchLogs(), fetchUsersAndExercises()]);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchLogs();
+    initialLoad();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLogAddedOrUpdated = () => {
+  const handleRefresh = () => {
     fetchLogs();
-    setEditLogId(null);
   };
 
   // Optimistic delete
@@ -45,21 +63,17 @@ function App() {
     )
       return;
 
-    const previousLogs = [...logs];
-
-    setLogs((prevLogs) => prevLogs.filter((log) => log.id !== logId));
+    const prev = [...logs];
+    setLogs((cur) => cur.filter((l) => l.id !== logId));
 
     try {
-      const res = await fetch(`http://localhost:5050/api/logs/${logId}`, {
-        method: "DELETE",
-      });
-
+      const res = await fetch(`/api/logs/${logId}`, { method: "DELETE" });
       if (!res.ok) {
-        const errorData = await res.json();
+        const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Delete failed");
       }
     } catch (err) {
-      setLogs(previousLogs);
+      setLogs(prev);
       alert(`Error deleting log: ${err.message}`);
     }
   };
@@ -90,18 +104,20 @@ function App() {
       >
         <ActivityLog
           logs={logs}
-          onEdit={setEditLogId}
+          users={users}
+          details={exercises}
           onDeleteLog={handleDeleteLog}
+          onRefresh={handleRefresh}
         />
       </div>
 
-      {/* Add/Edit Form container */}
+      {/* Add Form container */}
       <div
         style={{
           position: "fixed",
           top: "50%",
           left: "50%",
-          transform: "translate(-50%, calc(-50% - 1px))", // Moved up 20px for both Add & Edit
+          transform: "translate(-50%, calc(-50% - 1px))",
           width: "500px",
           maxHeight: "100vh",
           overflowY: "auto",
@@ -115,15 +131,7 @@ function App() {
           textAlign: "center",
         }}
       >
-        {editLogId ? (
-          <EditLogForm
-            logId={editLogId}
-            onCancel={() => setEditLogId(null)}
-            onUpdated={handleLogAddedOrUpdated}
-          />
-        ) : (
-          <AddLogForm onLogAdded={handleLogAddedOrUpdated} />
-        )}
+        <AddLogForm onLogAdded={handleRefresh} />
       </div>
     </div>
   );

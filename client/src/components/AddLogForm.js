@@ -4,6 +4,10 @@ import styles from "./formStyles.module.css";
 function AddLogForm({ onLogAdded }) {
   const [users, setUsers] = useState([]);
   const [exercises, setExercises] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingExercises, setLoadingExercises] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+
   const [form, setForm] = useState({
     user_id: "",
     date: new Date().toISOString().split("T")[0],
@@ -20,15 +24,40 @@ function AddLogForm({ onLogAdded }) {
   });
 
   useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then(setUsers)
-      .catch(console.error);
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      setLoadError(null);
+      try {
+        const res = await fetch("/api/users");
+        if (!res.ok) throw new Error(`Users fetch failed: ${res.status}`);
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("❌ Users load error:", err);
+        setUsers([]);
+        setLoadError("Failed to load users.");
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
 
-    fetch("/api/exercises")
-      .then((res) => res.json())
-      .then(setExercises)
-      .catch(console.error);
+    const fetchExercises = async () => {
+      setLoadingExercises(true);
+      try {
+        const res = await fetch("/api/exercises");
+        if (!res.ok) throw new Error(`Exercises fetch failed: ${res.status}`);
+        const data = await res.json();
+        setExercises(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("❌ Exercises load error:", err);
+        setExercises([]);
+      } finally {
+        setLoadingExercises(false);
+      }
+    };
+
+    fetchUsers();
+    fetchExercises();
   }, []);
 
   const handleAddDetail = () => {
@@ -64,7 +93,21 @@ function AddLogForm({ onLogAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.user_id || !form.duration || form.details.length === 0) {
+    // If no details yet but the pending detail is filled, auto-append it
+    const pendingIsFilled =
+      (!!newDetail.exercise_id || !!newDetail.name) &&
+      !!newDetail.reps &&
+      !!newDetail.tempo;
+
+    const payload = {
+      ...form,
+      details:
+        form.details.length === 0 && pendingIsFilled
+          ? [...form.details, newDetail]
+          : form.details,
+    };
+
+    if (!payload.user_id || !payload.duration || payload.details.length === 0) {
       alert("Please fill all required fields and add at least one exercise.");
       return;
     }
@@ -73,13 +116,17 @@ function AddLogForm({ onLogAdded }) {
       const res = await fetch("/api/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to add log");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || "Failed to add log");
+      }
 
       const data = await res.json();
       alert("✅ Log added!");
+
       setForm({
         user_id: "",
         date: new Date().toISOString().split("T")[0],
@@ -87,12 +134,40 @@ function AddLogForm({ onLogAdded }) {
         description: "",
         details: [],
       });
+      setNewDetail({ exercise_id: "", name: "", reps: "", tempo: "" });
+
       if (onLogAdded) onLogAdded(data);
     } catch (err) {
       console.error("❌ Error adding log:", err);
-      alert("Something went wrong");
+      alert(`Something went wrong: ${err.message}`);
     }
   };
+
+  const userOptions =
+    Array.isArray(users) && users.length > 0 ? (
+      users.map((u) => (
+        <option key={u.id} value={u.id}>
+          {u.username}
+        </option>
+      ))
+    ) : (
+      <option value="" disabled>
+        {loadError ? "Failed to load users" : "No users found — add one first"}
+      </option>
+    );
+
+  const exerciseOptions =
+    Array.isArray(exercises) && exercises.length > 0 ? (
+      exercises.map((ex) => (
+        <option key={ex.id} value={ex.id}>
+          {ex.detail_name}
+        </option>
+      ))
+    ) : (
+      <option value="">None</option>
+    );
+
+  const requireExerciseFields = !!newDetail.exercise_id || !!newDetail.name;
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -104,12 +179,10 @@ function AddLogForm({ onLogAdded }) {
         onChange={(e) => setForm({ ...form, user_id: e.target.value })}
         required
       >
-        <option value="">Select user</option>
-        {users.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.username}
-          </option>
-        ))}
+        <option value="">
+          {loadingUsers ? "Loading users..." : "Select user"}
+        </option>
+        {userOptions}
       </select>
 
       <label>Date:</label>
@@ -146,13 +219,10 @@ function AddLogForm({ onLogAdded }) {
             name: "",
           })
         }
+        disabled={loadingExercises}
       >
-        <option value="">None</option>
-        {exercises.map((ex) => (
-          <option key={ex.id} value={ex.id}>
-            {ex.detail_name}
-          </option>
-        ))}
+        <option value="">{loadingExercises ? "Loading..." : "None"}</option>
+        {exerciseOptions}
       </select>
 
       <label>Or enter exercise name manually:</label>
@@ -174,7 +244,7 @@ function AddLogForm({ onLogAdded }) {
         type="number"
         value={newDetail.reps}
         onChange={(e) => setNewDetail({ ...newDetail, reps: e.target.value })}
-        required
+        required={requireExerciseFields}
       />
 
       <label>Tempo (BPM):</label>
@@ -182,7 +252,7 @@ function AddLogForm({ onLogAdded }) {
         type="number"
         value={newDetail.tempo}
         onChange={(e) => setNewDetail({ ...newDetail, tempo: e.target.value })}
-        required
+        required={requireExerciseFields}
       />
 
       <button type="button" onClick={handleAddDetail}>
@@ -190,17 +260,22 @@ function AddLogForm({ onLogAdded }) {
       </button>
 
       <ul className={styles.exerciseList}>
-        {form.details.map((d, idx) => (
-          <li key={idx}>
-            {d.name ||
-              exercises.find((ex) => ex.id === parseInt(d.exercise_id))
-                ?.detail_name}{" "}
-            — {d.reps} reps @ {d.tempo} bpm{" "}
-            <button type="button" onClick={() => handleDeleteDetail(idx)}>
-              ❌
-            </button>
-          </li>
-        ))}
+        {form.details.map((d, idx) => {
+          const exName =
+            d.name ||
+            (Array.isArray(exercises)
+              ? exercises.find((ex) => ex.id === parseInt(d.exercise_id))
+                  ?.detail_name
+              : "");
+          return (
+            <li key={idx}>
+              {exName || "Unnamed"} — {d.reps} reps @ {d.tempo} bpm{" "}
+              <button type="button" onClick={() => handleDeleteDetail(idx)}>
+                ❌
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       <button type="submit">Submit</button>

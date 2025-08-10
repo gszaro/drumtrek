@@ -1,6 +1,7 @@
+// server/routes/exerciseRoutes.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../db/db.js");
+const pool = require("../db"); // <-- changed from ../db/db.js
 
 // GET all exercises (master list)
 router.get("/", async (_req, res) => {

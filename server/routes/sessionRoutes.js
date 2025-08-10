@@ -1,6 +1,7 @@
+// server/routes/sessionRoutes.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../db/db.js");
+const pool = require("../db"); // <-- changed from ../db/db.js
 
 // GET all logs with their details
 router.get("/", async (_req, res) => {

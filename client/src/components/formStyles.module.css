@@ -6,6 +6,8 @@
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 10px;
+  background: #fff;
+  color: #111;
 }
 
 .select {
@@ -14,6 +16,8 @@
   border-radius: 8px;
   font-size: 0.9rem;
   margin-left: 10px;
+  background: #fff;
+  color: #111;
 }
 
 .button {
@@ -57,23 +61,11 @@
 
   .input {
     flex: 2;
-  padding: 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  width: 100%;
-  box-sizing: border-box;
   }
 
   .select {
     flex: 1;
-  padding: 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  min-width: 120px;
-  background-color: #222;
-  color: white;
+    min-width: 120px;
   }
 }
 
@@ -139,6 +131,7 @@
   border: 1px solid #ccc;
   font-size: 0.9rem;
 }
+
 /* Animation */
 .fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
@@ -168,7 +161,7 @@
   }
 }
 
-/* Wraps the entire form nicely */
+/* App dark form wrapper (AddLogForm) */
 .form {
   max-width: 500px;
   margin: 0 auto;
@@ -179,17 +172,19 @@
   border-radius: 10px;
 }
 
-/* Ensures inputs are readable and full-width */
-.input,
-.select,
-textarea,
-input,
-select {
+/* Inputs inside dark form need dark bg + light text */
+.form input,
+.form select,
+.form textarea {
   width: 100%;
   max-width: 100%;
   padding: 0.5rem;
   font-size: 0.9rem;
   box-sizing: border-box;
+  background: #1a1a1a;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 8px;
 }
 
 /* Keep text from breaking layout */
@@ -205,6 +200,14 @@ ul {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 10px;
+}
+
+/* Used by EditLogModal (missing before) */
+.detailRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.6fr 0.6fr;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 /* Add space between Add/Remove buttons */

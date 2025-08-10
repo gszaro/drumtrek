@@ -1,0 +1,15 @@
+// server/db/index.js
+const { Pool } = require("pg");
+require("dotenv").config();
+
+const pool = new Pool({
+  connectionString:
+    process.env.DATABASE_URL ||
+    "postgresql://gregoryszaro@localhost:5432/drumtrek",
+  ssl:
+    process.env.PGSSLMODE === "require"
+      ? { rejectUnauthorized: false }
+      : undefined,
+});
+
+module.exports = pool;
