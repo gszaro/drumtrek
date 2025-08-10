@@ -1,103 +1,57 @@
-DrumTrek — Client
-React frontend for DrumTrek, a drumming practice tracker. Connects to the Node/Express API to list, add, edit, and delete practice logs.
+DrumTrek Client
+Overview
+The DrumTrek client is a React-based web application that provides an intuitive interface for tracking drumming practice sessions. It connects to the DrumTrek API to manage users, exercises, and practice logs. The client features a clean user experience for creating, viewing, editing, and deleting practice logs.
 
 Features
-View practice logs with date, duration, description, and exercise details
+User selection and exercise management
 
-Add new logs with per-exercise reps/tempo
+Create, read, update, and delete (CRUD) logs
 
-Edit or delete existing logs
+Search and sort functionality for activity logs
 
-Simple, responsive UI
+Modal-based detail and edit views
 
+Responsive form validation
+
+Integration with the DrumTrek API
+
+Technologies Used
+React
+
+JavaScript (ES6+)
+
+CSS Modules for styling
+
+Fetch API for data requests
+
+Modal components for details and editing
+
+Getting Started
 Prerequisites
-Node.js 18+ and npm
+Node.js (v14+ recommended)
 
-DrumTrek server running (default: http://localhost:5050)
+npm or yarn
 
-Environment
-Create /client/.env (no quotes):
+DrumTrek server running locally
 
-ini
-Copy
-Edit
-REACT_APP_API_BASE_URL=http://localhost:5050
-If omitted, the app defaults to http://localhost:5050.
-
-Install & Run
+Installation
 bash
 Copy
 Edit
-
-# from repo root
-
 cd client
 npm install
-npm start
-App runs at http://localhost:3000.
-
-Scripts
+Running the Client
 bash
 Copy
 Edit
-npm start # dev server with hot reload
-npm run build # production build in /build
-npm test # react-scripts tests (if configured)
-npm run lint # optional, if ESLint is set up
-API Expectations
-The client expects these endpoints on the server:
+npm start
+The application will run at http://localhost:3000.
 
-GET /api/logs → list logs
-
-POST /api/logs → create log
-
-PUT /api/logs/:id → update log
-
-DELETE /api/logs/:id → delete log
-
-Response shape (example):
+Configuration
+Ensure the package.json contains:
 
 json
 Copy
 Edit
-[
-{
-"id": 1,
-"user_id": 1,
-"date": "2025-08-01T04:00:00.000Z",
-"duration": 45,
-"description": "Paradiddles and transitions",
-"username": "gregdrums",
-"details": [
-{"name":"Paradiddle","reps":4,"tempo":90},
-{"name":"Flam Tap","reps":3,"tempo":80}
-]
-}
-]
-Project Structure (client)
-css
-Copy
-Edit
-client/
-src/
-components/
-ActivityLog.jsx
-AddLogForm.jsx
-EditLogForm.jsx
-App.js
-index.js
-App.css
-Common Gotchas
-CORS: ensure the server enables CORS for http://localhost:3000.
-
-API base URL: mismatch causes fetch failures—confirm REACT_APP_API_BASE_URL.
-
-Pool/DB errors: if server logs show pool.query is not a function, verify pg setup and exports.
-
-Build & Deploy
-bash
-Copy
-Edit
-npm run build
-
-# serve /client/build with your static host or reverse-proxy behind your API
+"proxy": "http://localhost:5050"
+This allows API calls to be proxied to the server during development.
