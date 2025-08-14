@@ -10,11 +10,16 @@ function ActivityLog({
   onDeleteLog,
   onRefresh,
 }) {
+  // Search box state — filters logs by user, description, or exercise name
   const [searchTerm, setSearchTerm] = useState("");
+  // Current sorting method (default: newest date first)
   const [sortBy, setSortBy] = useState("dateDesc");
-  const [selectedLog, setSelectedLog] = useState(null); // For view modal
-  const [editLog, setEditLog] = useState(null); // For edit modal
+  // State for the currently selected log when viewing details
+  const [selectedLog, setSelectedLog] = useState(null);
+  // State for the log currently being edited
+  const [editLog, setEditLog] = useState(null);
 
+  // Filter + sort the logs based on search term and sorting option
   const filteredLogs = (logs || [])
     .filter((log) => {
       const term = searchTerm.toLowerCase();
@@ -23,11 +28,14 @@ function ActivityLog({
       const hasDetailMatch =
         Array.isArray(log.details) &&
         log.details.some((d) => (d.name || "").toLowerCase().includes(term));
+
+      // Show logs if the search term matches username, description, or any exercise name
       return (
         username.includes(term) || description.includes(term) || hasDetailMatch
       );
     })
     .sort((a, b) => {
+      // Sorting logic based on user’s selection
       switch (sortBy) {
         case "dateAsc":
           return new Date(a.date) - new Date(b.date);
@@ -50,6 +58,7 @@ function ActivityLog({
     <div>
       <h2 style={{ textAlign: "center" }}>Activity Logs</h2>
 
+      {/* Search + sort controls */}
       <div className={styles.searchSortContainer}>
         <input
           type="text"
@@ -72,6 +81,7 @@ function ActivityLog({
         </select>
       </div>
 
+      {/* Render filtered and sorted logs */}
       <ul style={{ listStyle: "none", padding: 0 }}>
         {filteredLogs.map((log) => (
           <li
@@ -84,13 +94,17 @@ function ActivityLog({
               overflowWrap: "break-word",
             }}
           >
+            {/* Summary line for the log */}
             <div>
               <strong>{log.username || "Unknown"}</strong> —{" "}
               {log.date ? new Date(log.date).toLocaleDateString() : "—"} —{" "}
               {log.duration ?? 0} minutes
             </div>
+
+            {/* Notes or placeholder if empty */}
             {log.description ? <em>{log.description}</em> : <em>No notes</em>}
 
+            {/* Action buttons: view, edit, delete */}
             <div style={{ marginTop: "0.5rem" }}>
               <button
                 onClick={() => setSelectedLog(log)}
@@ -118,6 +132,7 @@ function ActivityLog({
         ))}
       </ul>
 
+      {/* Detail modal */}
       {selectedLog && (
         <LogDetailModal
           log={selectedLog}
@@ -125,6 +140,7 @@ function ActivityLog({
         />
       )}
 
+      {/* Edit modal */}
       {editLog && (
         <EditLogModal
           log={editLog}

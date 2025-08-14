@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
+// =============================
 // GET all users
+// =============================
 router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(
@@ -15,7 +17,9 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// CREATE user
+// =============================
+// CREATE a new user
+// =============================
 router.post("/", async (req, res) => {
   const { username, email = null, password_hash = null } = req.body || {};
   if (!username) return res.status(400).json({ error: "Username is required" });
@@ -34,7 +38,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE username
+// =============================
+// UPDATE an existing user's username
+// =============================
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { username } = req.body || {};
@@ -55,7 +61,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE user
+// =============================
+// DELETE a user
+// =============================
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {

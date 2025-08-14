@@ -4,24 +4,31 @@ import AddLogForm from "./components/AddLogForm";
 import "./App.css";
 
 function App() {
+  // State for activity logs
   const [logs, setLogs] = useState([]);
+  // State for users list (used in dropdowns or reference)
   const [users, setUsers] = useState([]);
+  // State for exercises list (used in dropdowns or reference)
   const [exercises, setExercises] = useState([]);
+  // Loading indicator for initial and refresh fetches
   const [loading, setLoading] = useState(true);
+  // Error state for displaying fetch issues
   const [error, setError] = useState(null);
 
+  // Fetch the activity logs from backend
   const fetchLogs = async () => {
-    setError(null);
+    setError(null); // clear any previous errors
     try {
       const res = await fetch("/api/logs");
       if (!res.ok) throw new Error(`Error fetching logs: ${res.status}`);
       const data = await res.json();
       setLogs(data);
     } catch (err) {
-      setError("Failed to load logs");
+      setError("Failed to load logs"); // user-friendly error
     }
   };
 
+  // Fetch both users and exercises in parallel
   const fetchUsersAndExercises = async () => {
     try {
       const [uRes, eRes] = await Promise.all([
@@ -35,27 +42,31 @@ function App() {
       setExercises(eData);
     } catch (err) {
       console.error(err);
-      // Not fatal to the whole app, but edit modal lists will be empty if this fails
+      // Not fatal — the app still works, but dropdowns/edit lists may be empty
     }
   };
 
+  // Perform initial load of all necessary data
   const initialLoad = async () => {
     setLoading(true);
     await Promise.all([fetchLogs(), fetchUsersAndExercises()]);
     setLoading(false);
   };
 
+  // Run once when the component mounts
   useEffect(() => {
     initialLoad();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Trigger logs refresh (used after adding/deleting a log)
   const handleRefresh = () => {
     fetchLogs();
   };
 
-  // Optimistic delete
+  // Delete a log (with optimistic UI update)
   const handleDeleteLog = async (logId) => {
+    // Ask the user for confirmation before removing
     if (
       !window.confirm(
         "Are you sure you want to delete this log and all its exercises?"
@@ -63,7 +74,9 @@ function App() {
     )
       return;
 
+    // Save current logs in case we need to rollback
     const prev = [...logs];
+    // Remove the log locally for immediate UI feedback
     setLogs((cur) => cur.filter((l) => l.id !== logId));
 
     try {
@@ -73,17 +86,19 @@ function App() {
         throw new Error(errorData.error || "Delete failed");
       }
     } catch (err) {
+      // Roll back to previous logs if deletion fails
       setLogs(prev);
       alert(`Error deleting log: ${err.message}`);
     }
   };
 
+  // Loading and error handling states
   if (loading) return <p>Loading activity logs...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div style={{ height: "1000vh", position: "relative" }}>
-      {/* Activity Logs pinned top-left */}
+      {/* Activity Log panel (fixed top-left) */}
       <div
         style={{
           position: "fixed",
@@ -111,7 +126,7 @@ function App() {
         />
       </div>
 
-      {/* Add Form container */}
+      {/* Add Log Form panel (fixed center) */}
       <div
         style={{
           position: "fixed",

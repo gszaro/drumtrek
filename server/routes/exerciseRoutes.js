@@ -1,9 +1,11 @@
 // server/routes/exerciseRoutes.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../db"); // <-- changed from ../db/db.js
+const pool = require("../db"); // Database connection
 
+// =============================
 // GET all exercises (master list)
+// =============================
 router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(
@@ -18,7 +20,9 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// CREATE exercise
+// =============================
+// CREATE a new exercise
+// =============================
 router.post("/", async (req, res) => {
   const { name, difficulty, description } = req.body || {};
   if (!name) return res.status(400).json({ error: "Name is required" });
@@ -37,7 +41,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE exercise
+// =============================
+// UPDATE an existing exercise
+// =============================
 router.put("/:id", async (req, res) => {
   const exerciseId = parseInt(req.params.id, 10);
   const { name, difficulty, description } = req.body || {};
@@ -61,7 +67,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE exercise
+// =============================
+// DELETE an exercise
+// =============================
 router.delete("/:id", async (req, res) => {
   const exerciseId = parseInt(req.params.id, 10);
   if (isNaN(exerciseId))

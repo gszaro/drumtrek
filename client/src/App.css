@@ -1,4 +1,9 @@
-/* Full reset and layout control */
+/* 
+  Global reset + base styling.
+  - Removes default margins/paddings.
+  - Ensures html, body, and React's #root container take up the full viewport height.
+  - Sets a clean sans-serif font and a light gray background for the whole page.
+*/
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -7,18 +12,29 @@ html, body, #root {
   background-color: #f5f5f5;
 }
 
-/* Flex container to center everything */
+/* 
+  Main app wrapper.
+  - Uses Flexbox to center all content both vertically and horizontally.
+  - Column layout for stacking items (form, list, etc.).
+  - Adds padding for breathing room and centers text.
+*/
 .App {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%; /* Required for full centering */
+  height: 100%; /* Needed so vertical centering works across the full page */
   text-align: center;
   padding: 2rem;
 }
 
-/* Style the form */
+/* 
+  Form styling.
+  - White card-like background for contrast against the gray page.
+  - Padding inside for spacing.
+  - Rounded corners + light shadow for a subtle floating effect.
+  - Limited width for readability on large screens but flexible on small screens.
+*/
 form {
   background: white;
   padding: 1.5rem;
@@ -29,19 +45,31 @@ form {
   max-width: 500px;
 }
 
-/* Input rows */
+/* 
+  Space out each input row inside the form so fields aren’t jammed together.
+*/
 form div {
   margin-bottom: 1rem;
 }
 
-/* List of sessions */
+/* 
+  Unordered list styling for displaying sessions.
+  - No bullets (list-style: none).
+  - Remove default padding.
+  - Top margin to separate it from the form.
+*/
 ul {
   list-style: none;
   padding: 0;
   margin-top: 1rem;
 }
 
-/* Buttons */
+/* 
+  Generic button styling.
+  - Dark background with white text for good contrast.
+  - Rounded edges and clickable cursor.
+  - Simple padding for comfortable click/tap area.
+*/
 button {
   padding: 0.5rem 1rem;
   background-color: #282c34;
@@ -51,7 +79,10 @@ button {
   cursor: pointer;
 }
 
+/* 
+  Button hover state.
+  - Slightly lighter/different shade for hover feedback.
+*/
 button:hover {
   background-color: #444c5a;
 }
-

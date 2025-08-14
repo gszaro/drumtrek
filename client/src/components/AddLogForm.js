@@ -2,20 +2,25 @@ import React, { useState, useEffect } from "react";
 import styles from "./formStyles.module.css";
 
 function AddLogForm({ onLogAdded }) {
+  // Dropdown data
   const [users, setUsers] = useState([]);
   const [exercises, setExercises] = useState([]);
+  // Loading indicators
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingExercises, setLoadingExercises] = useState(true);
+  // Error state for users fetch
   const [loadError, setLoadError] = useState(null);
 
+  // Main form state
   const [form, setForm] = useState({
     user_id: "",
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString().split("T")[0], // Default to today
     duration: "",
     description: "",
-    details: [],
+    details: [], // Array of exercise details
   });
 
+  // Temporary state for adding a single exercise before pushing into form.details
   const [newDetail, setNewDetail] = useState({
     exercise_id: "",
     name: "",
@@ -23,6 +28,7 @@ function AddLogForm({ onLogAdded }) {
     tempo: "",
   });
 
+  // Fetch users and exercises on mount
   useEffect(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
@@ -60,7 +66,9 @@ function AddLogForm({ onLogAdded }) {
     fetchExercises();
   }, []);
 
+  // Add a new exercise detail to the form
   const handleAddDetail = () => {
+    // Must have reps, tempo, and either a selected exercise or a name
     if (
       !newDetail.reps ||
       !newDetail.tempo ||
@@ -75,6 +83,7 @@ function AddLogForm({ onLogAdded }) {
       details: [...prev.details, newDetail],
     }));
 
+    // Reset the temporary newDetail form
     setNewDetail({
       exercise_id: "",
       name: "",
@@ -83,6 +92,7 @@ function AddLogForm({ onLogAdded }) {
     });
   };
 
+  // Remove an exercise from the form by index
   const handleDeleteDetail = (index) => {
     setForm((prev) => ({
       ...prev,
@@ -90,10 +100,11 @@ function AddLogForm({ onLogAdded }) {
     }));
   };
 
+  // Submit the form to the server
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // If no details yet but the pending detail is filled, auto-append it
+    // If no exercises in details yet but current newDetail is filled, auto-add it
     const pendingIsFilled =
       (!!newDetail.exercise_id || !!newDetail.name) &&
       !!newDetail.reps &&
@@ -107,6 +118,7 @@ function AddLogForm({ onLogAdded }) {
           : form.details,
     };
 
+    // Basic validation before sending
     if (!payload.user_id || !payload.duration || payload.details.length === 0) {
       alert("Please fill all required fields and add at least one exercise.");
       return;
@@ -127,6 +139,7 @@ function AddLogForm({ onLogAdded }) {
       const data = await res.json();
       alert("✅ Log added!");
 
+      // Reset the form after success
       setForm({
         user_id: "",
         date: new Date().toISOString().split("T")[0],
@@ -136,6 +149,7 @@ function AddLogForm({ onLogAdded }) {
       });
       setNewDetail({ exercise_id: "", name: "", reps: "", tempo: "" });
 
+      // Notify parent to refresh logs
       if (onLogAdded) onLogAdded(data);
     } catch (err) {
       console.error("❌ Error adding log:", err);
@@ -143,6 +157,7 @@ function AddLogForm({ onLogAdded }) {
     }
   };
 
+  // Render <option> list for users
   const userOptions =
     Array.isArray(users) && users.length > 0 ? (
       users.map((u) => (
@@ -156,6 +171,7 @@ function AddLogForm({ onLogAdded }) {
       </option>
     );
 
+  // Render <option> list for exercises
   const exerciseOptions =
     Array.isArray(exercises) && exercises.length > 0 ? (
       exercises.map((ex) => (
@@ -167,12 +183,14 @@ function AddLogForm({ onLogAdded }) {
       <option value="">None</option>
     );
 
+  // Determine if reps and tempo fields should be required
   const requireExerciseFields = !!newDetail.exercise_id || !!newDetail.name;
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <h2>Add Practice Log</h2>
 
+      {/* User selection */}
       <label>User:</label>
       <select
         value={form.user_id}
@@ -185,6 +203,7 @@ function AddLogForm({ onLogAdded }) {
         {userOptions}
       </select>
 
+      {/* Date */}
       <label>Date:</label>
       <input
         type="date"
@@ -192,6 +211,7 @@ function AddLogForm({ onLogAdded }) {
         onChange={(e) => setForm({ ...form, date: e.target.value })}
       />
 
+      {/* Duration */}
       <label>Duration (minutes):</label>
       <input
         type="number"
@@ -200,6 +220,7 @@ function AddLogForm({ onLogAdded }) {
         required
       />
 
+      {/* Notes */}
       <label>Notes (optional):</label>
       <textarea
         value={form.description}
@@ -209,6 +230,7 @@ function AddLogForm({ onLogAdded }) {
       <hr />
       <h3>Add Exercises</h3>
 
+      {/* Exercise selection from master list */}
       <label>Pick from Master List:</label>
       <select
         value={newDetail.exercise_id}
@@ -216,7 +238,7 @@ function AddLogForm({ onLogAdded }) {
           setNewDetail({
             ...newDetail,
             exercise_id: e.target.value,
-            name: "",
+            name: "", // Clear manual name when selecting from list
           })
         }
         disabled={loadingExercises}
@@ -225,6 +247,7 @@ function AddLogForm({ onLogAdded }) {
         {exerciseOptions}
       </select>
 
+      {/* Manual exercise name entry */}
       <label>Or enter exercise name manually:</label>
       <input
         type="text"
@@ -233,12 +256,13 @@ function AddLogForm({ onLogAdded }) {
           setNewDetail({
             ...newDetail,
             name: e.target.value,
-            exercise_id: "",
+            exercise_id: "", // Clear dropdown when typing
           })
         }
         placeholder="e.g. Paradiddle Groove"
       />
 
+      {/* Reps */}
       <label>Reps:</label>
       <input
         type="number"
@@ -247,6 +271,7 @@ function AddLogForm({ onLogAdded }) {
         required={requireExerciseFields}
       />
 
+      {/* Tempo */}
       <label>Tempo (BPM):</label>
       <input
         type="number"
@@ -255,10 +280,12 @@ function AddLogForm({ onLogAdded }) {
         required={requireExerciseFields}
       />
 
+      {/* Add exercise button */}
       <button type="button" onClick={handleAddDetail}>
         ➕ Add Exercise
       </button>
 
+      {/* Current exercise list */}
       <ul className={styles.exerciseList}>
         {form.details.map((d, idx) => {
           const exName =
@@ -278,6 +305,7 @@ function AddLogForm({ onLogAdded }) {
         })}
       </ul>
 
+      {/* Submit log */}
       <button type="submit">Submit</button>
     </form>
   );

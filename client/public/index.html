@@ -2,42 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+
+    <!-- Favicon for browser tabs and bookmarks.
+         %PUBLIC_URL% points to the public/ folder at build time. -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+
+    <!-- Make the layout adapt to phones, tablets, and desktops. -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Sets the browser UI color on some mobile devices (e.g., Android). -->
     <meta name="theme-color" content="#000000" />
+
+    <!-- Short, plain-English summary for search engines and link previews. -->
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="A React application bootstrapped with Create React App."
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
+    <!-- iOS home screen icon when the app is “installed” to the device. -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+    <!-- App manifest: tells browsers how to treat this as an installable app
+         (name, icons, theme colors, start URL, etc.). -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
     <title>React App</title>
   </head>
+
   <body>
+    <!-- If JavaScript is disabled, React can’t mount and nothing will render. -->
     <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <!-- React mounts here.
+         The build injects your compiled JS bundle(s) right before </body>,
+         and those scripts will hydrate or render the app into this #root div. -->
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
+    <!-- Notes for developers:
+         - This file is a template; opening it directly will look blank because
+           React hasn’t mounted yet.
+         - You can add meta tags, analytics, or webfonts here. Keep it lean—
+           heavy scripts and blocking CSS will slow down your first paint.
+         - Local references must live in the public/ folder. Use %PUBLIC_URL%
+           when linking so paths resolve correctly after a production build.
+         - Common commands:
+             * npm start / yarn start  -> run the dev server with hot reload
+             * npm run build / yarn build -> create an optimized production bundle
     -->
   </body>
 </html>

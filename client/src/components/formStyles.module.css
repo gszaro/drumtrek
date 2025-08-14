@@ -1,3 +1,4 @@
+/* General text inputs */
 .input {
   padding: 0.4rem;
   border: 1px solid #ccc;
@@ -10,6 +11,7 @@
   color: #111;
 }
 
+/* Dropdown select styling */
 .select {
   padding: 0.4rem;
   border: 1px solid #ccc;
@@ -20,6 +22,7 @@
   color: #111;
 }
 
+/* Base button style */
 .button {
   padding: 6px 12px;
   border: none;
@@ -28,6 +31,7 @@
   cursor: pointer;
 }
 
+/* Action-specific button colors */
 .detailButton {
   background-color: #2196f3;
   color: white;
@@ -43,6 +47,7 @@
   color: white;
 }
 
+/* Search bar + sort dropdown container */
 .searchSortContainer {
   display: flex;
   flex-direction: row;
@@ -52,6 +57,7 @@
   margin-bottom: 20px;
 }
 
+/* Responsive adjustments for search/sort controls */
 @media (min-width: 500px) {
   .searchSortContainer {
     flex-direction: row;
@@ -69,7 +75,11 @@
   }
 }
 
-/* Modal Styles */
+/* ========================
+   Modal Styling
+   ======================== */
+
+/* Fullscreen semi-transparent background */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -83,6 +93,7 @@
   z-index: 2000;
 }
 
+/* White card container for modal content */
 .modalContent {
   background-color: #fff;
   padding: 2rem;
@@ -94,6 +105,7 @@
   font-size: 0.95rem;
 }
 
+/* Close button (top right) */
 .modalCloseButton {
   position: absolute;
   top: 10px;
@@ -105,11 +117,13 @@
   color: #555;
 }
 
+/* Exercise list inside forms */
 .exerciseList {
   margin-top: 1rem;
   padding-left: 1.2rem;
 }
 
+/* Generic form spacing */
 .formGroup {
   margin-bottom: 1rem;
   width: 100%;
@@ -132,11 +146,16 @@
   font-size: 0.9rem;
 }
 
-/* Animation */
+/* ========================
+   Animations
+   ======================== */
+
+/* Fade in overlay */
 .fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
+/* Scale + fade modal content */
 .scaleIn {
   animation: scaleIn 0.2s ease-out forwards;
 }
@@ -161,7 +180,10 @@
   }
 }
 
-/* App dark form wrapper (AddLogForm) */
+/* ========================
+   Dark Form Styling (AddLogForm)
+   ======================== */
+
 .form {
   max-width: 500px;
   margin: 0 auto;
@@ -172,7 +194,7 @@
   border-radius: 10px;
 }
 
-/* Inputs inside dark form need dark bg + light text */
+/* Inputs within the dark form */
 .form input,
 .form select,
 .form textarea {
@@ -187,14 +209,14 @@
   border-radius: 8px;
 }
 
-/* Keep text from breaking layout */
+/* Prevent text overflow issues */
 ul {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
 }
 
-/* Ensure exercise row wraps properly */
+/* Ensure exercise rows don't squish content */
 .exerciseRow {
   display: flex;
   flex-direction: column;
@@ -202,7 +224,7 @@ ul {
   margin-bottom: 10px;
 }
 
-/* Used by EditLogModal (missing before) */
+/* Layout for detail rows in EditLogModal */
 .detailRow {
   display: grid;
   grid-template-columns: 1fr 1fr 0.6fr 0.6fr;
@@ -210,7 +232,7 @@ ul {
   margin-bottom: 8px;
 }
 
-/* Add space between Add/Remove buttons */
+/* Button grouping with spacing */
 .buttonRow {
   display: flex;
   justify-content: space-between;

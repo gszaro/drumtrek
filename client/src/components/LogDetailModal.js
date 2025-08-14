@@ -2,33 +2,37 @@ import React, { useEffect } from "react";
 import styles from "./formStyles.module.css";
 
 function LogDetailModal({ log, onClose }) {
+  // Handle escape key press and disable background scroll when modal is open
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
     };
-    document.body.style.overflow = "hidden"; // prevent scroll
+    document.body.style.overflow = "hidden"; // Lock page scroll
     window.addEventListener("keydown", handleEsc);
     return () => {
       window.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = "auto"; // restore scroll
+      document.body.style.overflow = "auto"; // Restore scroll
     };
   }, [onClose]);
 
+  // If no log data provided, don't render anything
   if (!log) return null;
 
   return (
     <div
       className={`${styles.modalOverlay} ${styles.fadeIn}`}
-      onClick={onClose}
+      onClick={onClose} // Close when clicking the overlay
     >
       <div
         className={`${styles.modalContent} ${styles.scaleIn}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside
       >
         <button onClick={onClose} className={styles.modalCloseButton}>
           &times;
         </button>
         <h3>Log Details</h3>
+
+        {/* Basic log info */}
         <p>
           <strong>User:</strong> {log.username}
         </p>
@@ -41,6 +45,8 @@ function LogDetailModal({ log, onClose }) {
         <p>
           <strong>Description:</strong> {log.description}
         </p>
+
+        {/* Exercise details if available */}
         {log.details && log.details.length > 0 && (
           <>
             <h4>Exercises:</h4>

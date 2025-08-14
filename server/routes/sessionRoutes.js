@@ -1,29 +1,32 @@
 // server/routes/sessionRoutes.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../db"); // <-- changed from ../db/db.js
+const pool = require("../db"); // Database connection
 
-// GET all logs with their details
+// =============================================
+// GET all logs with their exercise details
+// =============================================
 router.get("/", async (_req, res) => {
   try {
+    // Fetch logs with associated user info
     const logResult = await pool.query(`
       SELECT al.id, al.user_id, al.date, al.duration, al.description, u.username
       FROM activity_logs al
       JOIN users u ON al.user_id = u.id
       ORDER BY al.date DESC, al.id DESC
     `);
-
     const logs = logResult.rows;
 
+    // Fetch all details (exercises) for all logs
     const detailResult = await pool.query(`
       SELECT ld.session_id, ld.exercise_id, ld.reps, ld.tempo, ld.name,
              e.name AS detail_name
       FROM log_details ld
       LEFT JOIN exercises e ON ld.exercise_id = e.id
     `);
-
     const allDetails = detailResult.rows;
 
+    // Attach details to each log
     const logsWithDetails = logs.map((log) => {
       const details = allDetails
         .filter((d) => d.session_id === log.id)
@@ -42,7 +45,9 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// CREATE log with details
+// =============================================
+// CREATE a log with optional details
+// =============================================
 router.post("/", async (req, res) => {
   const { user_id, date, duration, description, details } = req.body || {};
   const client = await pool.connect();
@@ -56,14 +61,15 @@ router.post("/", async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    // Insert the main log entry
     const logInsert = await client.query(
       `INSERT INTO activity_logs (user_id, date, duration, description)
        VALUES ($1, $2, $3, $4) RETURNING id`,
       [user_id, date || new Date(), duration, description || ""]
     );
-
     const logId = logInsert.rows[0].id;
 
+    // Insert related detail rows if provided
     if (Array.isArray(details) && details.length > 0) {
       for (const d of details) {
         await client.query(
@@ -91,7 +97,9 @@ router.post("/", async (req, res) => {
   }
 });
 
+// =============================================
 // GET single log with details
+// =============================================
 router.get("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
   if (isNaN(logId)) return res.status(400).json({ error: "Invalid log id" });
@@ -132,7 +140,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// UPDATE log + replace details
+// =============================================
+// UPDATE log and replace all details
+// =============================================
 router.put("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
   const { user_id, date, duration, description, details } = req.body || {};
@@ -149,6 +159,7 @@ router.put("/:id", async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    // Update the main log entry
     await client.query(
       `UPDATE activity_logs
        SET user_id = $1, date = $2, duration = $3, description = $4
@@ -156,10 +167,12 @@ router.put("/:id", async (req, res) => {
       [user_id, date || new Date(), duration, description || "", logId]
     );
 
+    // Remove existing details
     await client.query(`DELETE FROM log_details WHERE session_id = $1`, [
       logId,
     ]);
 
+    // Insert new details
     if (Array.isArray(details) && details.length > 0) {
       for (const d of details) {
         await client.query(
@@ -187,7 +200,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE log
+// =============================================
+// DELETE log and its details
+// =============================================
 router.delete("/:id", async (req, res) => {
   const logId = parseInt(req.params.id, 10);
   if (isNaN(logId)) return res.status(400).json({ error: "Invalid log id" });

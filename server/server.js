@@ -5,24 +5,29 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-app.use(cors());
-app.use(express.json());
+// Middleware
+app.use(cors()); // Allow cross-origin requests
+app.use(express.json()); // Parse incoming JSON bodies
 
-// Health
+// Health check route for quick status verification
 app.get("/", (_req, res) => res.send("Activity Tracker API is running"));
 
-// Routes
-app.use("/api/users", require("./routes/users"));
-app.use("/api/exercises", require("./routes/exerciseRoutes"));
-app.use("/api/logs", require("./routes/sessionRoutes"));
+// API routes
+app.use("/api/users", require("./routes/users")); // User CRUD
+app.use("/api/exercises", require("./routes/exerciseRoutes")); // Exercise CRUD
+app.use("/api/logs", require("./routes/sessionRoutes")); // Session/log CRUD
 
-// Optional: single detail add endpoint (not required by UI)
+// Optional endpoint for adding a single log detail directly
+// This is not required by the current UI, but can be used by API clients
 const pool = require("./db");
 app.post("/api/log-details", async (req, res) => {
   const { session_id, exercise_id, reps, tempo, name } = req.body;
+
+  // Basic validation
   if (!session_id || (!exercise_id && !name)) {
     return res.status(400).json({ error: "Missing detail reference" });
   }
+
   try {
     const result = await pool.query(
       `INSERT INTO log_details (session_id, exercise_id, name, reps, tempo)
@@ -36,6 +41,7 @@ app.post("/api/log-details", async (req, res) => {
         tempo || null,
       ]
     );
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("❌ Failed to add log detail:", err);
@@ -43,6 +49,7 @@ app.post("/api/log-details", async (req, res) => {
   }
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

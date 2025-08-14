@@ -2,37 +2,42 @@ import React, { useState, useEffect } from "react";
 import styles from "./formStyles.module.css";
 
 function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
+  // Local state mirrors the log being edited
   const [formData, setFormData] = useState({
     user_id: log.user_id,
-    date: log.date.slice(0, 10),
+    date: log.date.slice(0, 10), // Convert ISO date to YYYY-MM-DD
     duration: log.duration,
     description: log.description || "",
-    details: log.details || [],
+    details: log.details || [], // Array of exercises within this log
   });
 
+  // Set up modal-specific effects: disable background scroll & handle ESC to close
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
     };
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // prevent scrolling under modal
     window.addEventListener("keydown", handleEsc);
     return () => {
       window.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto"; // restore scrolling
     };
   }, [onClose]);
 
+  // Generic input change handler for top-level formData fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((f) => ({ ...f, [name]: value }));
   };
 
+  // Handle changes within a specific detail (exercise entry)
   const handleDetailChange = (idx, field, value) => {
     const updated = [...formData.details];
     updated[idx][field] = value;
     setFormData((f) => ({ ...f, details: updated }));
   };
 
+  // Save the updated log back to the server
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -42,9 +47,9 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
         body: JSON.stringify(formData),
       });
       if (!res.ok) throw new Error("Failed to update log");
-      await res.json(); // Removed 'updated' variable to avoid ESLint warning
-      onUpdate(); // refresh parent
-      onClose();
+      await res.json(); // no need to store result — just refresh UI
+      onUpdate(); // Tell parent to refresh logs
+      onClose(); // Close modal
     } catch (err) {
       console.error(err);
       alert("Failed to update log.");
@@ -54,17 +59,19 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
   return (
     <div
       className={`${styles.modalOverlay} ${styles.fadeIn}`}
-      onClick={onClose}
+      onClick={onClose} // Clicking outside content closes modal
     >
       <div
         className={`${styles.modalContent} ${styles.scaleIn}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside content
       >
         <button onClick={onClose} className={styles.modalCloseButton}>
           &times;
         </button>
         <h3>Edit Log</h3>
+
         <form onSubmit={handleSubmit}>
+          {/* User selection */}
           <label>User</label>
           <select
             name="user_id"
@@ -80,6 +87,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
             ))}
           </select>
 
+          {/* Date */}
           <label>Date</label>
           <input
             type="date"
@@ -88,6 +96,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
             onChange={handleChange}
           />
 
+          {/* Duration */}
           <label>Duration (min)</label>
           <input
             type="number"
@@ -97,6 +106,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
             required
           />
 
+          {/* Description */}
           <label>Description</label>
           <textarea
             name="description"
@@ -104,9 +114,11 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
             onChange={handleChange}
           />
 
+          {/* Exercise details */}
           <h4>Details</h4>
           {formData.details.map((detail, idx) => (
             <div key={idx} className={styles.detailRow}>
+              {/* Dropdown for master exercise list */}
               <select
                 value={detail.exercise_id || ""}
                 onChange={(e) =>
@@ -121,6 +133,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
                 ))}
               </select>
 
+              {/* Manual name override */}
               <input
                 type="text"
                 placeholder="Or enter custom name"
@@ -130,6 +143,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
                 }
               />
 
+              {/* Reps */}
               <input
                 type="number"
                 placeholder="Reps"
@@ -139,6 +153,7 @@ function EditLogModal({ log, users, detailsMaster, onClose, onUpdate }) {
                 }
               />
 
+              {/* Tempo */}
               <input
                 type="text"
                 placeholder="Tempo"
