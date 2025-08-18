@@ -1,29 +1,28 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5050;
 
 // Middleware
-app.use(cors()); // Allow cross-origin requests
-app.use(express.json()); // Parse incoming JSON bodies
+app.use(cors());
+app.use(express.json());
 
-// Health check route for quick status verification
-app.get("/", (_req, res) => res.send("Activity Tracker API is running"));
+// Health check route
+app.get("/health", (_req, res) => res.send("✅ API is healthy"));
 
 // API routes
-app.use("/api/users", require("./routes/users")); // User CRUD
-app.use("/api/exercises", require("./routes/exerciseRoutes")); // Exercise CRUD
-app.use("/api/logs", require("./routes/sessionRoutes")); // Session/log CRUD
+app.use("/api/users", require("./routes/users"));
+app.use("/api/exercises", require("./routes/exerciseRoutes"));
+app.use("/api/logs", require("./routes/sessionRoutes"));
 
-// Optional endpoint for adding a single log detail directly
-// This is not required by the current UI, but can be used by API clients
+// Optional endpoint for adding a single log detail
 const pool = require("./db");
 app.post("/api/log-details", async (req, res) => {
   const { session_id, exercise_id, reps, tempo, name } = req.body;
 
-  // Basic validation
   if (!session_id || (!exercise_id && !name)) {
     return res.status(400).json({ error: "Missing detail reference" });
   }
@@ -49,7 +48,17 @@ app.post("/api/log-details", async (req, res) => {
   }
 });
 
+// Serve React frontend in production
+if (process.env.NODE_ENV === "production") {
+  const clientPath = path.join(__dirname, "client/build");
+  app.use(express.static(clientPath));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+  });
+}
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
